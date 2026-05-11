@@ -2,8 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { Card, Body, Meta, Input } from "@/components/ui";
 
-type Entry = { id: string; title: string | null; body_md: string; created_at: string; kind?: string; score?: number };
+type Entry = {
+  id: string;
+  title: string | null;
+  body_md: string;
+  created_at: string;
+  kind?: string;
+  score?: number;
+};
 
 export function EntriesSearch({ fallback }: { fallback: Entry[] }) {
   const [q, setQ] = useState("");
@@ -30,27 +38,36 @@ export function EntriesSearch({ fallback }: { fallback: Entry[] }) {
 
   return (
     <>
-      <input
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Search by meaning or keyword…"
-        className="w-full rounded border border-neutral-300 dark:border-neutral-700 bg-transparent px-3 py-2 text-sm"
-      />
-      {pending && <p className="text-xs text-neutral-500">Searching…</p>}
-      <ul className="divide-y divide-neutral-200 dark:divide-neutral-800 rounded-lg border border-neutral-200 dark:border-neutral-800">
-        {results.length === 0 && <li className="p-3 text-sm text-neutral-500">No entries.</li>}
-        {results.map((e) => (
-          <li key={e.id} className="p-3">
-            <Link href={`/entries/${e.id}`} className="block">
-              <div className="flex items-baseline justify-between gap-3">
-                <span className="font-medium">{e.title || "(untitled)"}</span>
-                <span className="text-xs text-neutral-500">{new Date(e.created_at).toLocaleDateString()}</span>
-              </div>
-              <p className="mt-1 text-sm text-neutral-500 line-clamp-2">{e.body_md.slice(0, 200)}</p>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <Input value={q} onChange={setQ} placeholder="Search by meaning or keyword…" />
+      {pending && <Meta>searching…</Meta>}
+      {results.length === 0 && (
+        <Card>
+          <Body soft size={13}>
+            No entries.
+          </Body>
+        </Card>
+      )}
+      {results.map((e) => (
+        <Link key={e.id} href={`/entries/${e.id}`} style={{ textDecoration: "none" }}>
+          <Card>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
+              <Body size={14} style={{ fontWeight: 500 }}>
+                {e.title || "(untitled)"}
+              </Body>
+              <Meta>{formatDate(e.created_at)}</Meta>
+            </div>
+            <Body soft size={13} style={{ marginTop: 6, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+              {e.body_md.slice(0, 200)}
+            </Body>
+          </Card>
+        </Link>
+      ))}
     </>
   );
+}
+
+function formatDate(s: string): string {
+  return new Date(s)
+    .toLocaleDateString(undefined, { month: "short", day: "numeric" })
+    .toUpperCase();
 }

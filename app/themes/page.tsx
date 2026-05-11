@@ -1,5 +1,15 @@
-import { Nav } from "@/components/Nav";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import {
+  Screen,
+  TopBar,
+  Card,
+  Display,
+  Body,
+  Meta,
+  Chip,
+  TabBar,
+} from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -13,27 +23,57 @@ export default async function ThemesPage() {
   const themes = data ?? [];
 
   return (
-    <>
-      <Nav />
-      <main className="mx-auto max-w-3xl px-4 py-8 space-y-4">
-        <h1 className="text-2xl font-semibold">Themes</h1>
-        {themes.length === 0 && <p className="text-sm text-neutral-500">No themes generated yet. POST /api/ai/themes with your CRON_SECRET to generate the first one, or wait for the weekly cron.</p>}
-        <ul className="space-y-4">
-          {themes.map((t) => (
-            <li key={t.id} className="rounded-lg border border-neutral-200 dark:border-neutral-800 p-4">
-              <div className="text-xs text-neutral-500">{t.period_start} – {t.period_end}</div>
-              {t.top_distortions?.length > 0 && (
-                <div className="mt-1 flex flex-wrap gap-1.5 text-xs">
-                  {t.top_distortions.map((d: string) => (
-                    <span key={d} className="rounded-full border border-neutral-300 dark:border-neutral-700 px-2 py-0.5">{d}</span>
-                  ))}
-                </div>
-              )}
-              <pre className="mt-2 whitespace-pre-wrap text-sm">{t.summary_md}</pre>
-            </li>
-          ))}
-        </ul>
-      </main>
-    </>
+    <Screen scroll>
+      <TopBar
+        left={
+          <Link href="/" style={{ color: "inherit", textDecoration: "none" }}>
+            ←
+          </Link>
+        }
+        title="themes"
+      />
+      <div>
+        <Meta>WEEKLY PATTERNS</Meta>
+        <Display size={32} style={{ marginTop: 4 }}>
+          What&apos;s recurring.
+        </Display>
+      </div>
+
+      {themes.length === 0 && (
+        <Card accent>
+          <Meta accent>EMPTY</Meta>
+          <Body size={13} style={{ marginTop: 6 }}>
+            No themes generated yet. POST /api/ai/themes with your CRON_SECRET to generate the first one, or wait for the weekly cron.
+          </Body>
+        </Card>
+      )}
+
+      {themes.map((t) => {
+        const range = `${formatDate(t.period_start)} – ${formatDate(t.period_end)}`;
+        return (
+          <Card key={t.id}>
+            <Meta>{range}</Meta>
+            {t.top_distortions?.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 8 }}>
+                {t.top_distortions.map((d: string) => (
+                  <Chip key={d}>{d}</Chip>
+                ))}
+              </div>
+            )}
+            <Body size={14} style={{ marginTop: 10, whiteSpace: "pre-wrap", lineHeight: 1.55 }}>
+              {t.summary_md}
+            </Body>
+          </Card>
+        );
+      })}
+
+      <TabBar active={2} />
+    </Screen>
   );
+}
+
+function formatDate(s: string): string {
+  return new Date(s)
+    .toLocaleDateString(undefined, { month: "short", day: "numeric" })
+    .toUpperCase();
 }

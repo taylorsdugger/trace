@@ -1,12 +1,12 @@
 import { Suspense } from "react";
-import { MoodMeter } from "./MoodMeter";
+import { TrapsPicker } from "./TrapsPicker";
 
 export const dynamic = "force-dynamic";
 
-export default function CheckInPage() {
+export default function TrapsPage() {
   return (
     <Suspense fallback={null}>
-      <MoodMeter />
+      <TrapsPicker />
     </Suspense>
   );
 }

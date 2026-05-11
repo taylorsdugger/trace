@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Screen, Card, Display, Body, Meta, Btn, Input } from "@/components/ui";
 
 function LoginForm() {
   const router = useRouter();
@@ -30,35 +31,43 @@ function LoginForm() {
   }
 
   return (
-    <form onSubmit={submit} className="w-full max-w-sm space-y-4">
-      <h1 className="text-2xl font-semibold">Trace</h1>
-      <p className="text-sm text-neutral-500">CBT Journal with Memory. Enter password to continue.</p>
-      <input
-        type="password"
-        autoFocus
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        className="w-full rounded border border-neutral-300 dark:border-neutral-700 bg-transparent px-3 py-2"
-        placeholder="Password"
-      />
-      {error && <p className="text-sm text-red-500">{error}</p>}
-      <button
-        type="submit"
-        disabled={pending}
-        className="w-full rounded bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-3 py-2 font-medium disabled:opacity-50"
-      >
-        {pending ? "Signing in…" : "Sign in"}
-      </button>
-    </form>
+    <Screen style={{ justifyContent: "center", gap: 20 }}>
+      <div style={{ textAlign: "center" }}>
+        <Meta>TRACE</Meta>
+        <Display size={40} style={{ marginTop: 8 }}>
+          Welcome back.
+        </Display>
+        <Body soft size={14} style={{ marginTop: 8 }}>
+          CBT journal with memory.
+        </Body>
+      </div>
+      <Card style={{ padding: 18 }}>
+        <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <Input
+            type="password"
+            value={password}
+            onChange={setPassword}
+            placeholder="Password"
+            autoFocus
+          />
+          {error && (
+            <Body size={13} style={{ color: "var(--color-accent)" }}>
+              {error}
+            </Body>
+          )}
+          <Btn primary type="submit" disabled={pending}>
+            {pending ? "Signing in…" : "Sign in"}
+          </Btn>
+        </form>
+      </Card>
+    </Screen>
   );
 }
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-      <Suspense fallback={<div className="w-full max-w-sm space-y-4"><div className="h-8 animate-pulse bg-neutral-200 dark:bg-neutral-800 rounded" /></div>}>
-        <LoginForm />
-      </Suspense>
-    </main>
+    <Suspense fallback={<Screen />}>
+      <LoginForm />
+    </Suspense>
   );
 }

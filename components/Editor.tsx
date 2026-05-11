@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { SocraticPanel } from "./SocraticPanel";
+import { Card, Display, Body, Meta, Btn, Input, TextArea } from "@/components/ui";
 
 const THOUGHT_RECORD_TEMPLATE = `## Situation
 (What happened? Where? Who was involved?)
@@ -30,13 +31,30 @@ export type EditorEntry = {
   mood: number | null;
   kind: "journal" | "thought_record" | "check_in";
   tags: string[];
+  createdAt?: string;
+  emotion?: string | null;
+  sleepHours?: number | null;
 };
+
+function prettyDate(s?: string): string {
+  if (!s) return "";
+  return new Date(s).toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+function defaultHeadline(entry: EditorEntry): string {
+  if (entry.kind === "check_in") return "Daily note";
+  if (entry.kind === "thought_record") return "Thought record";
+  return "Entry";
+}
 
 export function Editor({ entry }: { entry: EditorEntry }) {
   const router = useRouter();
   const [title, setTitle] = useState(entry.title ?? "");
   const [body, setBody] = useState(entry.body_md);
-  const [mood, setMood] = useState<number | "">(entry.mood ?? "");
   const [tags, setTags] = useState(entry.tags.join(", "));
   const [pending, startTransition] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -52,7 +70,7 @@ export function Editor({ entry }: { entry: EditorEntry }) {
     const payload = {
       title: title || null,
       body_md: body,
-      mood: mood === "" ? null : Number(mood),
+      mood: entry.mood,
       kind: entry.kind,
       tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
     };
@@ -86,60 +104,102 @@ export function Editor({ entry }: { entry: EditorEntry }) {
     }
   }
 
+  const headline = title.trim() || defaultHeadline(entry);
+  const showMetaRow = !!(entry.emotion || entry.sleepHours || entry.createdAt);
+
   return (
-    <div className="grid lg:grid-cols-[1fr_320px] gap-6">
-      <div className="space-y-3">
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Title"
-          className="w-full rounded border border-neutral-300 dark:border-neutral-700 bg-transparent px-3 py-2 text-lg font-medium"
-        />
-        <div className="flex items-center gap-3 text-sm">
-          <label className="text-neutral-500">Mood</label>
-          <input
-            type="number"
-            min={1}
-            max={10}
-            value={mood}
-            onChange={(e) => setMood(e.target.value === "" ? "" : Number(e.target.value))}
-            className="w-20 rounded border border-neutral-300 dark:border-neutral-700 bg-transparent px-2 py-1"
-          />
-          <input
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            placeholder="tags, comma separated"
-            className="flex-1 rounded border border-neutral-300 dark:border-neutral-700 bg-transparent px-2 py-1"
-          />
-        </div>
-        <textarea
-          ref={ta}
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="What's on your mind?"
-          className="w-full min-h-[420px] rounded border border-neutral-300 dark:border-neutral-700 bg-transparent px-3 py-2 font-mono text-sm leading-relaxed"
-        />
-        <div className="flex items-center gap-2">
-          <button onClick={insertTemplate} type="button" className="text-xs rounded border border-neutral-300 dark:border-neutral-700 px-2 py-1">
-            Insert CBT thought record
-          </button>
-          <div className="flex-1" />
-          {entry.id && (
-            <button onClick={remove} type="button" className="text-xs text-red-500 hover:underline">Delete</button>
-          )}
-          <button
-            onClick={save}
-            disabled={pending}
-            className="rounded bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-3 py-1.5 text-sm font-medium disabled:opacity-50"
-          >
-            {pending ? "Saving…" : "Save"}
-          </button>
-        </div>
-        {saveError && <p className="text-sm text-red-500">{saveError}</p>}
+    <>
+      {/* Header — read-only summary instead of a raw title input */}
+      <div>
+        {entry.createdAt && <Meta>{prettyDate(entry.createdAt).toUpperCase()}</Meta>}
+        <Display size={28} style={{ marginTop: 4 }}>
+          {headline}
+        </Display>
+        {showMetaRow && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
+            {entry.emotion && (
+              <Body size={13} soft>
+                feeling <span style={{ color: "var(--color-ink)", fontWeight: 500 }}>{entry.emotion}</span>
+              </Body>
+            )}
+            {entry.sleepHours != null && (
+              <Body size={13} soft>
+                · slept {entry.sleepHours}h
+              </Body>
+            )}
+          </div>
+        )}
       </div>
-      <aside>
-        <SocraticPanel context={`Title: ${title}\n\n${body}`} />
-      </aside>
-    </div>
+
+      {/* Editable title — collapsible feel */}
+      <Card style={{ padding: 10 }}>
+        <Meta>TITLE</Meta>
+        <Input
+          value={title}
+          onChange={setTitle}
+          placeholder={defaultHeadline(entry)}
+          style={{
+            marginTop: 4,
+            background: "transparent",
+            border: "none",
+            padding: 0,
+            font: "500 15px var(--font-geist-sans), sans-serif",
+          }}
+        />
+      </Card>
+
+      <Card style={{ padding: 10 }}>
+        <Meta>TAGS</Meta>
+        <input
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+          placeholder="comma, separated"
+          style={{
+            width: "100%",
+            marginTop: 4,
+            border: "none",
+            outline: "none",
+            background: "transparent",
+            font: "400 14px var(--font-geist-sans), sans-serif",
+            color: "var(--color-ink)",
+            padding: 0,
+          }}
+        />
+      </Card>
+
+      <TextArea
+        value={body}
+        onChange={setBody}
+        placeholder="What's on your mind?"
+        rows={14}
+        style={{
+          font: "400 14px/1.6 var(--font-geist-sans), sans-serif",
+          minHeight: 320,
+        }}
+      />
+
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        <Btn small onClick={insertTemplate}>
+          insert thought record
+        </Btn>
+        <div style={{ flex: 1 }} />
+        {entry.id && (
+          <Btn small ghost onClick={remove} style={{ color: "var(--color-accent)" }}>
+            delete
+          </Btn>
+        )}
+        <Btn primary small onClick={save} disabled={pending}>
+          {pending ? "saving…" : "save"}
+        </Btn>
+      </div>
+
+      {saveError && (
+        <Body size={13} style={{ color: "var(--color-accent)" }}>
+          {saveError}
+        </Body>
+      )}
+
+      <SocraticPanel context={`Title: ${title}\n\n${body}`} />
+    </>
   );
 }

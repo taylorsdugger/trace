@@ -1,26 +1,105 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Design tokens */
+  --color-paper: #F7F2E8;
+  --color-surface: #FFFCF5;
+  --color-surface-soft: #F2EBDD;
+  --color-ink: #1A1714;
+  --color-ink-soft: #6B6358;
+  --color-ink-line: rgba(26, 23, 20, 0.12);
+  --color-accent: #B96A52;
+  --color-accent-soft: rgba(185, 106, 82, 0.10);
+  --color-accent-line: rgba(185, 106, 82, 0.35);
+
+  --color-mood-red: #C97A6E;
+  --color-mood-yellow: #D9A94B;
+  --color-mood-blue: #6D8FB9;
+  --color-mood-green: #7BB191;
+  --color-mood-red-bg: rgba(201, 122, 110, 0.10);
+  --color-mood-yellow-bg: rgba(217, 169, 75, 0.10);
+  --color-mood-blue-bg: rgba(109, 143, 185, 0.10);
+  --color-mood-green-bg: rgba(123, 177, 145, 0.10);
+
+  --shadow-card: 0 1px 0 rgba(26, 23, 20, 0.02), 0 1px 2px rgba(26, 23, 20, 0.03);
+
+  --radius-card: 20px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-paper: var(--color-paper);
+  --color-surface: var(--color-surface);
+  --color-surface-soft: var(--color-surface-soft);
+  --color-ink: var(--color-ink);
+  --color-ink-soft: var(--color-ink-soft);
+  --color-ink-line: var(--color-ink-line);
+  --color-accent: var(--color-accent);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-accent-line: var(--color-accent-line);
+  --color-mood-red: var(--color-mood-red);
+  --color-mood-yellow: var(--color-mood-yellow);
+  --color-mood-blue: var(--color-mood-blue);
+  --color-mood-green: var(--color-mood-green);
+
+  --font-display: var(--font-instrument-serif);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-jetbrains-mono);
+
+  --shadow-card: var(--shadow-card);
+
+  --radius-card: var(--radius-card);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  background: var(--color-paper);
+  color: var(--color-ink);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  letter-spacing: -0.1px;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Press states */
+button, [role="button"] {
+  transition: transform 100ms ease, background-color 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+button:active, [role="button"]:active {
+  transform: scale(0.97);
+}
+
+/* Mobile-first frame: edge-to-edge on phones, centered narrow column on desktop. */
+.app-frame {
+  width: 100%;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (min-width: 640px) {
+  html, body {
+    background: var(--color-surface-soft);
+  }
+  .app-frame {
+    background: var(--color-paper);
+    border-left: 1px solid var(--color-ink-line);
+    border-right: 1px solid var(--color-ink-line);
+    min-height: 100dvh;
+    box-shadow: 0 0 60px rgba(26, 23, 20, 0.05);
+  }
+}
+
+/* Form controls inherit the paper aesthetic */
+input, textarea, select {
+  font-family: inherit;
+  color: inherit;
+}
+input::placeholder, textarea::placeholder {
+  color: var(--color-ink-soft);
+  opacity: 0.65;
+}
+input:focus, textarea:focus {
+  outline: none;
 }

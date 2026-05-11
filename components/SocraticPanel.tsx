@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Card, Body, Meta, Btn, Input } from "@/components/ui";
 
 type Turn = { role: "user" | "assistant"; content: string };
 
@@ -42,34 +43,48 @@ export function SocraticPanel({ context }: { context: string }) {
   }
 
   return (
-    <div className="rounded-lg border border-neutral-200 dark:border-neutral-800 p-3 space-y-3 sticky top-4">
-      <div className="text-xs uppercase tracking-wide text-neutral-500">Socratic companion</div>
-      <div className="flex flex-wrap gap-2">
-        <button onClick={() => send("Help me find distortions in what I just wrote.")} className="text-xs rounded border border-neutral-300 dark:border-neutral-700 px-2 py-1">Find distortions</button>
-        <button onClick={() => send("Challenge my most painful thought above.")} className="text-xs rounded border border-neutral-300 dark:border-neutral-700 px-2 py-1">Challenge me</button>
-        <button onClick={() => send("Help me write a balanced reframe.")} className="text-xs rounded border border-neutral-300 dark:border-neutral-700 px-2 py-1">Reframe</button>
+    <Card accent>
+      <Meta accent>✦ SOCRATIC COMPANION</Meta>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+        <Btn small onClick={() => send("Help me find distortions in what I just wrote.")}>
+          find distortions
+        </Btn>
+        <Btn small ghost onClick={() => send("Challenge my most painful thought above.")}>
+          challenge me
+        </Btn>
+        <Btn small ghost onClick={() => send("Help me write a balanced reframe.")}>
+          reframe
+        </Btn>
       </div>
-      <div className="max-h-80 overflow-y-auto space-y-2 text-sm">
-        {turns.length === 0 && <p className="text-neutral-500">Write something, then ask for a question, challenge, or reframe.</p>}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12, maxHeight: 320, overflowY: "auto" }}>
+        {turns.length === 0 && (
+          <Body soft size={13}>
+            Write something, then ask for a question, challenge, or reframe.
+          </Body>
+        )}
         {turns.map((t, i) => (
-          <div key={i} className={t.role === "user" ? "text-neutral-900 dark:text-neutral-100" : "text-neutral-600 dark:text-neutral-400"}>
-            <span className="font-medium">{t.role === "user" ? "You" : "Companion"}: </span>
-            <span className="whitespace-pre-wrap">{t.content}</span>
+          <div key={i}>
+            <Meta>{t.role === "user" ? "YOU" : "COMPANION"}</Meta>
+            <Body size={13} style={{ marginTop: 3, whiteSpace: "pre-wrap", lineHeight: 1.5, color: t.role === "user" ? "var(--color-ink)" : "var(--color-ink-soft)" }}>
+              {t.content}
+            </Body>
           </div>
         ))}
       </div>
-      <div className="flex gap-2">
-        <input
+      <div style={{ display: "flex", gap: 6, marginTop: 12 }}>
+        <Input
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") send(); }}
+          onChange={setInput}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") send();
+          }}
           placeholder="Ask…"
-          className="flex-1 rounded border border-neutral-300 dark:border-neutral-700 bg-transparent px-2 py-1 text-sm"
+          style={{ flex: 1, padding: "8px 12px", font: "400 13px var(--font-geist-sans), sans-serif" }}
         />
-        <button onClick={() => send()} disabled={streaming} className="text-xs rounded bg-neutral-900 text-white dark:bg-white dark:text-neutral-900 px-2 py-1 disabled:opacity-50">
-          Send
-        </button>
+        <Btn small primary onClick={() => send()} disabled={streaming}>
+          send
+        </Btn>
       </div>
-    </div>
+    </Card>
   );
 }
