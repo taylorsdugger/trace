@@ -1,6 +1,6 @@
-# CBT Notes
+# Trace
 
-Personal CBT journaling app. Next.js + Supabase + OpenRouter. Free-tier hostable on Vercel.
+**Trace: CBT Journal with Memory.** Personal CBT journaling with semantic memory across all your entries. Next.js + Supabase + OpenRouter. Free-tier hostable on Vercel.
 
 ## Setup
 

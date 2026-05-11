@@ -31,8 +31,8 @@ function LoginForm() {
 
   return (
     <form onSubmit={submit} className="w-full max-w-sm space-y-4">
-      <h1 className="text-2xl font-semibold">CBT Notes</h1>
-      <p className="text-sm text-neutral-500">Enter password to continue.</p>
+      <h1 className="text-2xl font-semibold">Trace</h1>
+      <p className="text-sm text-neutral-500">CBT Journal with Memory. Enter password to continue.</p>
       <input
         type="password"
         autoFocus

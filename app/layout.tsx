@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CBT Notes",
-  description: "Personal CBT journaling.",
+  title: "Trace",
+  description: "Trace: CBT Journal with Memory",
   manifest: "/manifest.json",
 };
 

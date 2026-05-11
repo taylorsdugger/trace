@@ -4,7 +4,7 @@ export function Nav() {
   return (
     <nav className="border-b border-neutral-200 dark:border-neutral-800">
       <div className="mx-auto max-w-3xl px-4 py-3 flex items-center gap-4 text-sm">
-        <Link href="/" className="font-semibold">CBT</Link>
+        <Link href="/" className="font-semibold">Trace</Link>
         <Link href="/entries" className="hover:underline">Entries</Link>
         <Link href="/check-in" className="hover:underline">Check-in</Link>
         <Link href="/themes" className="hover:underline">Themes</Link>

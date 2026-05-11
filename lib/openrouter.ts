@@ -19,7 +19,7 @@ function headers(): HeadersInit {
     Authorization: `Bearer ${apiKey()}`,
     "Content-Type": "application/json",
     "HTTP-Referer": process.env.APP_URL ?? "http://localhost:3000",
-    "X-Title": "CBT App",
+    "X-Title": "Trace",
   };
 }
 
