@@ -75,6 +75,20 @@ export function NewEntry() {
   const [aiLoading, setAiLoading] = useState(false);
   const [answer, setAnswer] = useState("");
   const [showAnswer, setShowAnswer] = useState(false);
+  const [transcript, setTranscript] = useState<{ role: "assistant" | "user"; content: string }[]>([]);
+
+  function saveAnswerToNote() {
+    if (!answer.trim()) return;
+    const block = `\n\n> ${aiPrompt}\n\n${answer.trim()}\n`;
+    setNote((prev) => (prev ? prev + block : block.trimStart()));
+    setTranscript((prev) => [
+      ...prev,
+      { role: "assistant", content: aiPrompt },
+      { role: "user", content: answer.trim() },
+    ]);
+    setAnswer("");
+    setShowAnswer(false);
+  }
 
   // Detailed fields
   const [situation, setSituation] = useState("");
@@ -219,24 +233,14 @@ export function NewEntry() {
     setSaving(true);
     setError(null);
 
-    const trapsLine =
-      selectedTrapObjs.length > 0
-        ? selectedTrapObjs.map((t) => t.name).join(", ")
-        : detectedTrap || "";
+    const pendingAnswer = showAnswer && answer.trim() ? `\n\n> ${aiPrompt}\n\n${answer.trim()}` : "";
 
     const body_md =
       mode === "quick"
-        ? [
-            note,
-            trapsLine ? `\n\n_Traps noticed: ${trapsLine}_` : "",
-            showAnswer && answer ? `\n\n> ${aiPrompt}\n\n${answer}` : "",
-          ]
-            .join("")
-            .trim()
+        ? [note, pendingAnswer].join("").trim()
         : [
             `## Situation\n${situation}`,
             `## Automatic thought\n${automatic}`,
-            trapsLine ? `## Traps noticed\n${trapsLine}` : "",
             `## Evidence for\n${evidenceFor}`,
             `## Evidence against\n${evidenceAgainst}`,
             `## Reframe\n${reframe}`,
@@ -247,6 +251,8 @@ export function NewEntry() {
     const kind = mode === "quick" ? "check_in" : "thought_record";
     const tags = contextTags.size ? Array.from(contextTags) : [];
     if (mode === "quick") tags.unshift("check-in");
+    // Surface traps as `trap:<slug>` tag entries so the detail page can render them as chips.
+    for (const t of selectedTrapObjs) tags.push(`trap:${t.slug}`);
     const trapNames = selectedTrapObjs.map((t) => t.name);
 
     const res = await fetch("/api/entries", {
@@ -268,7 +274,10 @@ export function NewEntry() {
           sleep_hours: sleep === "" ? null : Number(sleep),
           context_tags: Array.from(contextTags),
           seed: mode === "quick" ? note : automatic,
-          transcript: showAnswer ? [{ role: "assistant", content: aiPrompt }, { role: "user", content: answer }] : [],
+          transcript:
+            showAnswer && answer.trim()
+              ? [...transcript, { role: "assistant", content: aiPrompt }, { role: "user", content: answer.trim() }]
+              : transcript,
         },
         thought_record:
           mode === "detailed"
@@ -500,24 +509,34 @@ export function NewEntry() {
               </Btn>
             </div>
             {showAnswer && (
-              <textarea
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                placeholder="Type your response…"
-                style={{
-                  marginTop: 10,
-                  width: "100%",
-                  minHeight: 60,
-                  border: "1px solid var(--color-ink-line)",
-                  outline: "none",
-                  borderRadius: 12,
-                  padding: 10,
-                  background: "transparent",
-                  color: "var(--color-ink)",
-                  font: "400 13px/1.45 var(--font-geist-sans), sans-serif",
-                  resize: "vertical",
-                }}
-              />
+              <>
+                <textarea
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  placeholder="Type your response…"
+                  style={{
+                    marginTop: 10,
+                    width: "100%",
+                    minHeight: 60,
+                    border: "1px solid var(--color-ink-line)",
+                    outline: "none",
+                    borderRadius: 12,
+                    padding: 10,
+                    background: "transparent",
+                    color: "var(--color-ink)",
+                    font: "400 13px/1.45 var(--font-geist-sans), sans-serif",
+                    resize: "vertical",
+                  }}
+                />
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginTop: 8 }}>
+                  <Btn small ghost onClick={() => { setAnswer(""); setShowAnswer(false); }}>
+                    cancel
+                  </Btn>
+                  <Btn small primary onClick={saveAnswerToNote} disabled={!answer.trim()}>
+                    add to note ↑
+                  </Btn>
+                </div>
+              </>
             )}
           </Card>
 

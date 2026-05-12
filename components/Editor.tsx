@@ -3,7 +3,8 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { SocraticPanel } from "./SocraticPanel";
-import { Card, Display, Body, Meta, Btn, Input, TextArea } from "@/components/ui";
+import { Card, Display, Body, Meta, Btn, Input, TextArea, Chip } from "@/components/ui";
+import { TRAPS } from "@/lib/traps";
 
 const THOUGHT_RECORD_TEMPLATE = `## Situation
 (What happened? Where? Who was involved?)
@@ -51,11 +52,27 @@ function defaultHeadline(entry: EditorEntry): string {
   return "Entry";
 }
 
+function splitTags(all: string[]): { traps: string[]; regular: string[] } {
+  const traps: string[] = [];
+  const regular: string[] = [];
+  for (const t of all) {
+    if (t.startsWith("trap:")) traps.push(t.slice(5));
+    else regular.push(t);
+  }
+  return { traps, regular };
+}
+
+function trapName(slug: string): string {
+  return TRAPS.find((t) => t.slug === slug)?.name ?? slug;
+}
+
 export function Editor({ entry }: { entry: EditorEntry }) {
   const router = useRouter();
+  const initial = splitTags(entry.tags);
   const [title, setTitle] = useState(entry.title ?? "");
   const [body, setBody] = useState(entry.body_md);
-  const [tags, setTags] = useState(entry.tags.join(", "));
+  const [tags, setTags] = useState(initial.regular.join(", "));
+  const [trapSlugs, setTrapSlugs] = useState<string[]>(initial.traps);
   const [pending, startTransition] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
   const ta = useRef<HTMLTextAreaElement | null>(null);
@@ -67,12 +84,14 @@ export function Editor({ entry }: { entry: EditorEntry }) {
 
   async function save() {
     setSaveError(null);
+    const regular = tags.split(",").map((t) => t.trim()).filter(Boolean);
+    const trapTags = trapSlugs.map((s) => `trap:${s}`);
     const payload = {
       title: title || null,
       body_md: body,
       mood: entry.mood,
       kind: entry.kind,
-      tags: tags.split(",").map((t) => t.trim()).filter(Boolean),
+      tags: [...regular, ...trapTags],
     };
     const url = entry.id ? `/api/entries/${entry.id}` : "/api/entries";
     const method = entry.id ? "PUT" : "POST";
@@ -127,6 +146,22 @@ export function Editor({ entry }: { entry: EditorEntry }) {
                 · slept {entry.sleepHours}h
               </Body>
             )}
+          </div>
+        )}
+        {trapSlugs.length > 0 && (
+          <div style={{ marginTop: 10 }}>
+            <Meta>THINKING TRAPS</Meta>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 6 }}>
+              {trapSlugs.map((slug) => (
+                <Chip
+                  key={slug}
+                  active
+                  onClick={() => setTrapSlugs((prev) => prev.filter((s) => s !== slug))}
+                >
+                  {trapName(slug)} ✕
+                </Chip>
+              ))}
+            </div>
           </div>
         )}
       </div>

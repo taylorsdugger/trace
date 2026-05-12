@@ -32,7 +32,7 @@ export function TopBar({
   right?: ReactNode;
 }) {
   const side: CSSProperties = {
-    width: 60,
+    minWidth: 60,
     font: "500 13px var(--font-geist-sans), sans-serif",
     color: "var(--color-ink-soft)",
   };
@@ -373,6 +373,60 @@ export function MoodDot({
           : undefined,
       }}
     />
+  );
+}
+
+export function TraceLogo({
+  size = 22,
+  style,
+}: {
+  size?: number;
+  style?: CSSProperties;
+}) {
+  // Dots: blue / green / yellow / red — same as the mood quadrant palette.
+  const dot = Math.round(size * 0.32);
+  const gap = Math.round(size * 0.18);
+  return (
+    <div
+      style={{
+        display: "inline-flex",
+        alignItems: "baseline",
+        gap: Math.round(size * 0.42),
+        color: "var(--color-ink)",
+        ...style,
+      }}
+    >
+      <span
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap,
+          transform: `translateY(-${Math.round(size * 0.12)}px)`,
+        }}
+      >
+        {["#6D8FB9", "#7BB191", "#D9A94B", "#C97A6E"].map((c) => (
+          <span
+            key={c}
+            style={{
+              width: dot,
+              height: dot,
+              borderRadius: "50%",
+              background: c,
+              display: "inline-block",
+            }}
+          />
+        ))}
+      </span>
+      <span
+        style={{
+          font: `400 ${size}px var(--font-instrument-serif), Georgia, serif`,
+          letterSpacing: -0.5,
+          lineHeight: 1,
+        }}
+      >
+        trace
+      </span>
+    </div>
   );
 }
 

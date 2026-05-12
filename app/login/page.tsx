@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Screen, Card, Display, Body, Meta, Btn, Input } from "@/components/ui";
+import { Screen, Card, Display, Body, Btn, Input, TraceLogo } from "@/components/ui";
 
 function LoginForm() {
   const router = useRouter();
@@ -32,12 +32,12 @@ function LoginForm() {
 
   return (
     <Screen style={{ justifyContent: "center", gap: 20 }}>
-      <div style={{ textAlign: "center" }}>
-        <Meta>TRACE</Meta>
-        <Display size={40} style={{ marginTop: 8 }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+        <TraceLogo size={42} />
+        <Display size={32} style={{ marginTop: 4 }}>
           Welcome back.
         </Display>
-        <Body soft size={14} style={{ marginTop: 8 }}>
+        <Body soft size={14}>
           CBT journal with memory.
         </Body>
       </div>

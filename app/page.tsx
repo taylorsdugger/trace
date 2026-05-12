@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { Screen, TopBar, Card, Display, Heading, Body, Meta, MoodDot, TabBar } from "@/components/ui";
+import { Screen, TopBar, Card, Display, Heading, Body, Meta, MoodDot, TabBar, TraceLogo } from "@/components/ui";
 import { QUADRANT_COLORS } from "@/lib/emotions";
 
 export const dynamic = "force-dynamic";
@@ -83,7 +83,7 @@ export default async function HomePage() {
 
   return (
     <Screen>
-      <TopBar left="trace" />
+      <TopBar left={<TraceLogo size={20} />} />
 
       <div>
         <Meta>{dayMeta}</Meta>
