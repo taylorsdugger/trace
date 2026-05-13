@@ -79,7 +79,7 @@ export function NewEntry() {
   const initialMode = (params.get("mode") as Mode) || "quick";
   const [mode, setMode] = useState<Mode>(initialMode);
   const [mood, setMood] = useState<StoredMood | null>(null);
-  const [sleep, setSleep] = useState<string>();
+  const [sleep, setSleep] = useState<string>("");
   const [contextTags, setContextTags] = useState<Set<string>>(new Set([]));
 
   // Quick fields
