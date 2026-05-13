@@ -126,47 +126,13 @@ function AxisLabel({
 export function MoodMeter() {
   const router = useRouter();
   const params = useSearchParams();
-  const mode = params.get("mode");
-  const isLog = mode === "log";
-  const next = params.get("next") ?? (isLog ? "/" : "/entries/new?mode=quick");
+  const next = params.get("next") ?? "/entries/new?mode=quick";
   const [selected, setSelected] = useState<Emotion | null>(null);
-  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function confirm() {
+  function confirm() {
     if (!selected) return;
-    if (isLog) {
-      setSaving(true);
-      setError(null);
-      const res = await fetch("/api/entries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: `Mood · ${selected.word}`,
-          body_md: "",
-          mood: selected.valence,
-          kind: "check_in",
-          tags: ["mood-log"],
-          check_in: {
-            emotion: selected.word,
-            valence: selected.valence,
-            energy: selected.energy,
-            sleep_hours: null,
-            context_tags: [],
-            seed: "",
-            transcript: [],
-          },
-        }),
-      });
-      setSaving(false);
-      if (!res.ok) {
-        setError(await res.text());
-        return;
-      }
-      router.push(next);
-      router.refresh();
-      return;
-    }
+    setError(null);
     if (typeof window !== "undefined") {
       sessionStorage.setItem(
         "trace.mood",
@@ -297,7 +263,7 @@ export function MoodMeter() {
       <button
         type="button"
         onClick={confirm}
-        disabled={!selected || saving}
+        disabled={!selected}
         style={{
           width: "100%",
           background: "var(--color-ink)",
@@ -308,7 +274,7 @@ export function MoodMeter() {
           display: "flex",
           alignItems: "center",
           gap: 12,
-          cursor: selected && !saving ? "pointer" : "default",
+          cursor: selected ? "pointer" : "default",
           opacity: selected ? 1 : 0.55,
           textAlign: "left",
         }}
@@ -364,7 +330,7 @@ export function MoodMeter() {
             flexShrink: 0,
           }}
         >
-          {saving ? "…" : "→"}
+          →
         </div>
       </button>
     </Screen>

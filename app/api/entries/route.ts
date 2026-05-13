@@ -20,6 +20,9 @@ type ThoughtRecordPayload = {
   outcome?: string | null;
 };
 
+const ENTRY_KINDS = ["journal", "check_in", "thought_record"] as const;
+type EntryKind = (typeof ENTRY_KINDS)[number];
+
 type EntryRequest = {
   title?: string | null;
   body_md?: string;
@@ -32,21 +35,26 @@ type EntryRequest = {
 
 export async function POST(req: NextRequest) {
   const body = (await req.json()) as EntryRequest;
+  const kind: EntryKind = (ENTRY_KINDS as readonly string[]).includes(body.kind ?? "")
+    ? (body.kind as EntryKind)
+    : "journal";
+
   const sb = supabase();
+  const warnings: string[] = [];
   const { data, error } = await sb
     .from("entries")
     .insert({
       title: body.title ?? null,
       body_md: body.body_md ?? "",
       mood: body.mood ?? null,
-      kind: body.kind ?? "journal",
+      kind,
       tags: body.tags ?? [],
     })
     .select("id")
     .single();
   if (error || !data) return NextResponse.json({ error: error?.message ?? "insert failed" }, { status: 500 });
 
-  if (body.kind === "check_in" && body.check_in) {
+  if (kind === "check_in" && body.check_in) {
     const ci = body.check_in;
     const { data: ciRow, error: ciErr } = await sb
       .from("check_ins")
@@ -58,7 +66,7 @@ export async function POST(req: NextRequest) {
       })
       .select("id")
       .single();
-    if (ciErr) console.error("check_ins insert failed", ciErr);
+    if (ciErr) warnings.push(`check_ins: ${ciErr.message}`);
 
     const { error: msErr } = await sb.from("mood_scores").insert({
       entry_id: data.id,
@@ -69,10 +77,10 @@ export async function POST(req: NextRequest) {
       sleep_hours: ci.sleep_hours ?? null,
       context_tags: ci.context_tags ?? [],
     });
-    if (msErr) console.error("mood_scores insert failed", msErr);
+    if (msErr) warnings.push(`mood_scores: ${msErr.message}`);
   }
 
-  if (body.kind === "thought_record" && body.thought_record) {
+  if (kind === "thought_record" && body.thought_record) {
     const tr = body.thought_record;
     const { error: trErr } = await sb.from("thought_records").insert({
       entry_id: data.id,
@@ -82,12 +90,11 @@ export async function POST(req: NextRequest) {
       balanced_thought: tr.balanced_thought ?? null,
       outcome: tr.outcome ?? null,
     });
-    if (trErr) console.error("thought_records insert failed", trErr);
+    if (trErr) warnings.push(`thought_records: ${trErr.message}`);
   }
 
-  // Fire-and-forget embeddings; don't block the user.
   if ((body.body_md ?? "").trim()) {
     reembedEntry(data.id, body.body_md ?? "").catch((e) => console.error("embed failed", e));
   }
-  return NextResponse.json({ id: data.id });
+  return NextResponse.json(warnings.length ? { id: data.id, warnings } : { id: data.id });
 }

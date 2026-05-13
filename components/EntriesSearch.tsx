@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Card, Body, Meta, Input } from "@/components/ui";
+import { formatShortDate } from "@/lib/dates";
 
 type Entry = {
   id: string;
@@ -54,7 +55,7 @@ export function EntriesSearch({ fallback }: { fallback: Entry[] }) {
               <Body size={14} style={{ fontWeight: 500 }}>
                 {e.title || "(untitled)"}
               </Body>
-              <Meta>{formatDate(e.created_at)}</Meta>
+              <Meta>{formatShortDate(e.created_at)}</Meta>
             </div>
             <Body soft size={13} style={{ marginTop: 6, lineHeight: 1.5, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
               {e.body_md.slice(0, 200)}
@@ -64,10 +65,4 @@ export function EntriesSearch({ fallback }: { fallback: Entry[] }) {
       ))}
     </>
   );
-}
-
-function formatDate(s: string): string {
-  return new Date(s)
-    .toLocaleDateString(undefined, { month: "short", day: "numeric" })
-    .toUpperCase();
 }

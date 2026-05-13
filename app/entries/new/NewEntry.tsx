@@ -12,6 +12,7 @@ import {
   Meta,
   Btn,
   Chip,
+  IconBtn,
   MoodDot,
   TabBar,
 } from "@/components/ui";
@@ -21,6 +22,18 @@ import {
   type Quadrant,
 } from "@/lib/emotions";
 import { TRAPS } from "@/lib/traps";
+import { fetchJson, streamText } from "@/lib/fetch";
+
+function readSession<T>(key: string): T | null {
+  if (typeof window === "undefined") return null;
+  const raw = sessionStorage.getItem(key);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
 
 type Mode = "quick" | "detailed";
 
@@ -66,8 +79,8 @@ export function NewEntry() {
   const initialMode = (params.get("mode") as Mode) || "quick";
   const [mode, setMode] = useState<Mode>(initialMode);
   const [mood, setMood] = useState<StoredMood | null>(null);
-  const [sleep, setSleep] = useState<string>("5");
-  const [contextTags, setContextTags] = useState<Set<string>>(new Set(["work"]));
+  const [sleep, setSleep] = useState<string>();
+  const [contextTags, setContextTags] = useState<Set<string>>(new Set([]));
 
   // Quick fields
   const [note, setNote] = useState("");
@@ -105,61 +118,54 @@ export function NewEntry() {
   const [hydrated, setHydrated] = useState(false);
 
   const noteRef = useRef<HTMLTextAreaElement | null>(null);
+  const aiAbortRef = useRef<AbortController | null>(null);
 
-  // Hydrate draft + mood + traps from sessionStorage on mount.
+  useEffect(() => () => aiAbortRef.current?.abort(), []);
+
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const raw = sessionStorage.getItem(DRAFT_KEY);
-    if (raw) {
-      try {
-        const d = JSON.parse(raw) as Partial<Draft>;
-        if (d.mode === "quick" || d.mode === "detailed") setMode(d.mode);
-        if (typeof d.note === "string") setNote(d.note);
-        if (typeof d.sleep === "string") setSleep(d.sleep);
-        if (Array.isArray(d.contextTags)) setContextTags(new Set(d.contextTags));
-        if (typeof d.situation === "string") setSituation(d.situation);
-        if (typeof d.automatic === "string") setAutomatic(d.automatic);
-        if (typeof d.evidenceFor === "string") setEvidenceFor(d.evidenceFor);
-        if (typeof d.evidenceAgainst === "string") setEvidenceAgainst(d.evidenceAgainst);
-        if (typeof d.reframe === "string") setReframe(d.reframe);
-        if (Array.isArray(d.traps)) setSelectedTraps(d.traps);
-      } catch {}
+    const d = readSession<Partial<Draft>>(DRAFT_KEY);
+    if (d) {
+      if (d.mode === "quick" || d.mode === "detailed") setMode(d.mode);
+      if (typeof d.note === "string") setNote(d.note);
+      if (typeof d.sleep === "string") setSleep(d.sleep);
+      if (Array.isArray(d.contextTags)) setContextTags(new Set(d.contextTags));
+      if (typeof d.situation === "string") setSituation(d.situation);
+      if (typeof d.automatic === "string") setAutomatic(d.automatic);
+      if (typeof d.evidenceFor === "string") setEvidenceFor(d.evidenceFor);
+      if (typeof d.evidenceAgainst === "string") setEvidenceAgainst(d.evidenceAgainst);
+      if (typeof d.reframe === "string") setReframe(d.reframe);
+      if (Array.isArray(d.traps)) setSelectedTraps(d.traps);
     }
-    const moodRaw = sessionStorage.getItem("trace.mood");
-    if (moodRaw) {
-      try {
-        setMood(JSON.parse(moodRaw) as StoredMood);
-      } catch {}
-    }
+    const m = readSession<StoredMood>("trace.mood");
+    if (m) setMood(m);
     // trace.traps is the handoff from the picker — apply it and clear so subsequent
     // mounts don't re-overwrite state with a stale handoff.
-    const trapsRaw = sessionStorage.getItem("trace.traps");
-    if (trapsRaw) {
-      try {
-        const t = JSON.parse(trapsRaw);
-        if (Array.isArray(t)) setSelectedTraps(t);
-      } catch {}
+    const t = readSession<string[]>("trace.traps");
+    if (t && Array.isArray(t)) {
+      setSelectedTraps(t);
       sessionStorage.removeItem("trace.traps");
     }
     setHydrated(true);
   }, []);
 
-  // Persist draft on every change (after hydration to avoid stomping on stored draft with defaults).
   useEffect(() => {
     if (!hydrated || typeof window === "undefined") return;
-    const d: Draft = {
-      mode,
-      note,
-      sleep,
-      contextTags: [...contextTags],
-      situation,
-      automatic,
-      evidenceFor,
-      evidenceAgainst,
-      reframe,
-      traps: selectedTraps,
-    };
-    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+    const handle = setTimeout(() => {
+      const d: Draft = {
+        mode,
+        note,
+        sleep,
+        contextTags: [...contextTags],
+        situation,
+        automatic,
+        evidenceFor,
+        evidenceAgainst,
+        reframe,
+        traps: selectedTraps,
+      };
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+    }, 300);
+    return () => clearTimeout(handle);
   }, [hydrated, mode, note, sleep, contextTags, situation, automatic, evidenceFor, evidenceAgainst, reframe, selectedTraps]);
 
   const detectedTrap = useMemo(() => detectTrap(automatic), [automatic]);
@@ -197,31 +203,25 @@ export function NewEntry() {
     if (!context.trim()) return;
     setAiLoading(true);
     setAiPrompt("…");
+    aiAbortRef.current?.abort();
+    const ac = new AbortController();
+    aiAbortRef.current = ac;
     try {
-      const res = await fetch("/api/ai/socratic", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      await streamText(
+        "/api/ai/socratic",
+        {
           context: `Daily check-in. ${mood ? `Feeling ${mood.emotion}.` : ""}\n${context}`,
           turns: [
             { role: "user", content: "Ask me one short Socratic question (under 15 words) to gently dig deeper." },
           ],
-        }),
-      });
-      if (!res.body) return;
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let acc = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        acc += decoder.decode(value, { stream: true });
-        setAiPrompt(acc);
-      }
+        },
+        setAiPrompt,
+        ac.signal,
+      );
     } catch {
       setAiPrompt("What part of this feels biggest right now?");
     } finally {
-      setAiLoading(false);
+      if (aiAbortRef.current === ac) setAiLoading(false);
     }
   }
 
@@ -255,14 +255,10 @@ export function NewEntry() {
     for (const t of selectedTrapObjs) tags.push(`trap:${t.slug}`);
     const trapNames = selectedTrapObjs.map((t) => t.name);
 
-    const res = await fetch("/api/entries", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title:
-          mode === "quick"
-            ? `Daily note ${new Date().toLocaleDateString()}`
-            : `Thought record ${new Date().toLocaleDateString()}`,
+    const today = new Date().toLocaleDateString();
+    const res = await fetchJson<{ id: string }>("/api/entries", {
+      body: {
+        title: mode === "quick" ? `Daily note ${today}` : `Thought record ${today}`,
         body_md,
         mood: mood.valence,
         kind,
@@ -288,18 +284,17 @@ export function NewEntry() {
                 balanced_thought: reframe,
               }
             : undefined,
-      }),
+      },
     });
     setSaving(false);
-    if (!res.ok) {
-      setError(await res.text());
+    if (!res.ok || !res.data) {
+      setError(res.text || "save failed");
       return;
     }
-    const { id } = await res.json();
     sessionStorage.removeItem("trace.mood");
     sessionStorage.removeItem("trace.traps");
     sessionStorage.removeItem(DRAFT_KEY);
-    router.push(`/entries/${id}`);
+    router.push(`/entries/${res.data.id}`);
   }
 
   const moodColor = mood ? QUADRANT_COLORS[mood.quadrant] : "var(--color-ink-line)";
@@ -307,33 +302,16 @@ export function NewEntry() {
   return (
     <Screen scroll={mode === "detailed"}>
       <TopBar
-        left={
-          <button
-            type="button"
-            onClick={() => router.push("/")}
-            style={{ background: "none", border: "none", color: "inherit", font: "inherit", cursor: "pointer", padding: 0 }}
-          >
-            ✕
-          </button>
-        }
+        left={<IconBtn onClick={() => router.push("/")}>✕</IconBtn>}
         title="new entry"
         right={
-          <button
-            type="button"
+          <IconBtn
             onClick={save}
             disabled={saving}
-            style={{
-              background: "none",
-              border: "none",
-              color: "var(--color-ink)",
-              font: "500 13px var(--font-geist-sans), sans-serif",
-              cursor: "pointer",
-              padding: 0,
-              opacity: saving ? 0.5 : 1,
-            }}
+            style={{ color: "var(--color-ink)", font: "500 13px var(--font-geist-sans), sans-serif" }}
           >
             {saving ? "saving…" : "save"}
-          </button>
+          </IconBtn>
         }
       />
 
@@ -441,22 +419,17 @@ export function NewEntry() {
         <Card>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
             <Meta>THINKING TRAPS</Meta>
-            <button
-              type="button"
+            <IconBtn
               onClick={pickTraps}
               style={{
-                background: "none",
-                border: "none",
                 color: "var(--color-ink-soft)",
                 font: "500 10px var(--font-jetbrains-mono), monospace",
                 letterSpacing: 0.6,
                 textTransform: "uppercase",
-                cursor: "pointer",
-                padding: 0,
               }}
             >
               EDIT
-            </button>
+            </IconBtn>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 8 }}>
             {selectedTrapObjs.map((t) => (

@@ -252,6 +252,40 @@ export function Btn({
   );
 }
 
+export function IconBtn({
+  children,
+  onClick,
+  disabled,
+  style,
+  type = "button",
+}: {
+  children?: ReactNode;
+  onClick?: MouseEventHandler;
+  disabled?: boolean;
+  style?: CSSProperties;
+  type?: "button" | "submit";
+}) {
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        background: "none",
+        border: "none",
+        color: "inherit",
+        font: "inherit",
+        cursor: disabled ? "default" : "pointer",
+        padding: 0,
+        opacity: disabled ? 0.5 : 1,
+        ...style,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 type InputProps = {
   value: string;
   onChange: (v: string) => void;

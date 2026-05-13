@@ -103,3 +103,34 @@ input::placeholder, textarea::placeholder {
 input:focus, textarea:focus {
   outline: none;
 }
+
+/* Rendered markdown inside theme/summary cards */
+.theme-md {
+  font: 400 14px/1.55 var(--font-geist-sans), sans-serif;
+  color: var(--color-ink);
+}
+.theme-md > *:first-child { margin-top: 0; }
+.theme-md > *:last-child { margin-bottom: 0; }
+.theme-md h1, .theme-md h2, .theme-md h3, .theme-md h4 {
+  font: 500 13px var(--font-geist-sans), sans-serif;
+  color: var(--color-ink);
+  letter-spacing: 0.2px;
+  margin: 14px 0 4px;
+}
+.theme-md p { margin: 6px 0; }
+.theme-md ul, .theme-md ol { margin: 6px 0; padding-left: 18px; }
+.theme-md li { margin: 2px 0; }
+.theme-md strong { font-weight: 600; color: var(--color-ink); }
+.theme-md em { font-style: italic; }
+.theme-md code {
+  font: 12px var(--font-jetbrains-mono), monospace;
+  background: var(--color-surface-soft);
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+.theme-md blockquote {
+  margin: 8px 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--color-ink-line);
+  color: var(--color-ink-soft);
+}

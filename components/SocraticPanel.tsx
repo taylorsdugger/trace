@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card, Body, Meta, Btn, Input } from "@/components/ui";
+import { streamText } from "@/lib/fetch";
 
 type Turn = { role: "user" | "assistant"; content: string };
 
@@ -9,36 +10,31 @@ export function SocraticPanel({ context }: { context: string }) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   async function send(starter?: string) {
     const userText = starter ?? input;
     if (!userText.trim()) return;
     const next: Turn[] = [...turns, { role: "user", content: userText }];
-    setTurns(next);
+    setTurns([...next, { role: "assistant", content: "" }]);
     setInput("");
     setStreaming(true);
+    abortRef.current?.abort();
+    const ac = new AbortController();
+    abortRef.current = ac;
     try {
-      const res = await fetch("/api/ai/socratic", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ context, turns: next }),
-      });
-      if (!res.body) {
-        setStreaming(false);
-        return;
-      }
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let acc = "";
-      setTurns([...next, { role: "assistant", content: "" }]);
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        acc += decoder.decode(value, { stream: true });
-        setTurns([...next, { role: "assistant", content: acc }]);
-      }
+      await streamText(
+        "/api/ai/socratic",
+        { context, turns: next },
+        (acc) => setTurns([...next, { role: "assistant", content: acc }]),
+        ac.signal,
+      );
+    } catch {
+      // aborted or network error — leave whatever streamed in place
     } finally {
-      setStreaming(false);
+      if (abortRef.current === ac) setStreaming(false);
     }
   }
 

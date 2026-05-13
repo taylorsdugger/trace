@@ -1,30 +1,34 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { chat } from "@/lib/openrouter";
 import { THEMES_SYSTEM } from "@/lib/prompts";
+import { dayKey } from "@/lib/dates";
 
-function authorized(req: NextRequest): boolean {
-  const expected = process.env.CRON_SECRET;
-  if (!expected) return false;
-  const header = req.headers.get("authorization");
-  return header === `Bearer ${expected}`;
-}
-
-export async function POST(req: NextRequest) {
-  if (!authorized(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+export async function POST() {
   return run();
 }
 
-export async function GET(req: NextRequest) {
-  // Allow manual trigger via browser when authorized.
-  if (!authorized(req)) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+export async function GET() {
   return run();
 }
 
 async function run() {
   const sb = supabase();
   const end = new Date();
-  const start = new Date(end.getTime() - 7 * 86400 * 1000);
+
+  const { data: lastTheme } = await sb
+    .from("themes")
+    .select("period_end,generated_at")
+    .order("generated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const sevenDaysAgo = new Date(end.getTime() - 7 * 86400 * 1000);
+  const lastAnchor = lastTheme?.generated_at
+    ? new Date(lastTheme.generated_at)
+    : null;
+  // Window covers "since the last time I themed" OR "last 7 days", whichever is wider.
+  const start = lastAnchor && lastAnchor < sevenDaysAgo ? lastAnchor : sevenDaysAgo;
 
   const { data: entries, error } = await sb
     .from("entries")
@@ -58,8 +62,8 @@ async function run() {
   }
 
   const { error: insertErr } = await sb.from("themes").insert({
-    period_start: start.toISOString().slice(0, 10),
-    period_end: end.toISOString().slice(0, 10),
+    period_start: dayKey(start),
+    period_end: dayKey(end),
     summary_md: summary,
     top_distortions: top_distortions.slice(0, 10),
   });

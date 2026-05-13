@@ -2,6 +2,9 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Screen, TopBar, Card, Display, Heading, Body, Meta, MoodDot, TabBar, TraceLogo } from "@/components/ui";
 import { QUADRANT_COLORS } from "@/lib/emotions";
+import { dayKey } from "@/lib/dates";
+import { MemoryCard } from "@/components/MemoryCard";
+import { StreakCard } from "@/components/StreakCard";
 
 export const dynamic = "force-dynamic";
 
@@ -23,36 +26,29 @@ async function loadDashboard() {
   ]);
 
   const datesSet = new Set<string>();
-  for (const r of datesRes.data ?? []) {
-    datesSet.add(new Date(r.created_at).toISOString().slice(0, 10));
-  }
-
-  // 14-day ribbon: oldest → today
-  const ribbon: boolean[] = [];
-  for (let i = 13; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    ribbon.push(datesSet.has(d.toISOString().slice(0, 10)));
-  }
+  for (const r of datesRes.data ?? []) datesSet.add(dayKey(r.created_at));
 
   // Streak: consecutive days ending today (or yesterday if today blank)
   let streak = 0;
   for (let i = 0; ; i++) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
-    if (datesSet.has(key)) streak++;
+    if (datesSet.has(dayKey(d))) streak++;
     else if (i === 0) continue;
     else break;
   }
 
-  // Entries this month
   const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+  const monthStart = dayKey(new Date(now.getFullYear(), now.getMonth(), 1));
   let thisMonth = 0;
   for (const day of datesSet) if (day >= monthStart) thisMonth++;
 
-  return { latestTheme: themesRes.data?.[0] ?? null, streak, thisMonth, ribbon };
+  return {
+    latestTheme: themesRes.data?.[0] ?? null,
+    streak,
+    thisMonth,
+    activeDays: Array.from(datesSet),
+  };
 }
 
 function greeting(date: Date): string {
@@ -79,8 +75,6 @@ export default async function HomePage() {
     .toUpperCase()
     .replace(",", " ·");
 
-  const ribbon = data?.ribbon ?? Array(14).fill(false);
-
   return (
     <Screen>
       <TopBar left={<TraceLogo size={20} />} />
@@ -102,50 +96,14 @@ export default async function HomePage() {
       )}
 
       {/* streak card */}
-      <Card>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-          <div>
-            <Meta>STREAK</Meta>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 4 }}>
-              <Display size={28}>{data?.streak ?? 0}</Display>
-              <Body soft size={13}>
-                {data?.streak === 1 ? "day" : "days"} · {data?.thisMonth ?? 0} this month
-              </Body>
-            </div>
-          </div>
-          <Meta>14d ▾</Meta>
-        </div>
-        <div style={{ display: "flex", gap: 3, marginTop: 12 }}>
-          {ribbon.map((f, i) => (
-            <div
-              key={i}
-              style={{
-                flex: 1,
-                height: 22,
-                borderRadius: 4,
-                background: f ? "var(--color-ink)" : "var(--color-surface-soft)",
-                border: f ? "none" : "1px solid var(--color-ink-line)",
-                position: "relative",
-              }}
-            >
-              {i === 13 && (
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    borderRadius: 4,
-                    boxShadow:
-                      "0 0 0 2px var(--color-paper), 0 0 0 3px var(--color-accent)",
-                  }}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-      </Card>
+      <StreakCard
+        streak={data?.streak ?? 0}
+        thisMonth={data?.thisMonth ?? 0}
+        activeDays={data?.activeDays ?? []}
+      />
 
       {/* mood pulse */}
-      <Link href="/check-in?mode=log" style={{ textDecoration: "none" }}>
+      <Link href="/check-in" style={{ textDecoration: "none" }}>
         <Card>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <Heading>How&apos;s the morning?</Heading>
@@ -180,21 +138,7 @@ export default async function HomePage() {
       </Link>
 
       {/* memory prompt */}
-      <Card accent>
-        <Meta accent>
-          ✦ FROM MEMORY
-          {data?.latestTheme?.period_end
-            ? ` · ${new Date(data.latestTheme.period_end)
-                .toLocaleDateString(undefined, { month: "short", day: "numeric" })
-                .toUpperCase()}`
-            : ""}
-        </Meta>
-        <Body size={14} style={{ marginTop: 6, lineHeight: 1.45 }}>
-          {data?.latestTheme?.summary_md
-            ? data.latestTheme.summary_md.split("\n")[0]
-            : "Your reflections will surface here once you've journaled a few days."}
-        </Body>
-      </Card>
+      <MemoryCard theme={data?.latestTheme ?? null} />
 
       {/* quick actions */}
       <div style={{ display: "flex", gap: 10 }}>

@@ -1,29 +1,12 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { SocraticPanel } from "./SocraticPanel";
 import { Card, Display, Body, Meta, Btn, Input, TextArea, Chip } from "@/components/ui";
 import { TRAPS } from "@/lib/traps";
-
-const THOUGHT_RECORD_TEMPLATE = `## Situation
-(What happened? Where? Who was involved?)
-
-## Automatic thoughts
-(What went through your mind?)
-
-## Emotions (0-100)
--
-
-## Cognitive distortions
--
-
-## Balanced thought
-(A more accurate, compassionate reframe.)
-
-## Outcome
-(How do you feel now? What will you do?)
-`;
+import { formatLongDate } from "@/lib/dates";
+import { fetchJson } from "@/lib/fetch";
 
 export type EditorEntry = {
   id?: string;
@@ -36,15 +19,6 @@ export type EditorEntry = {
   emotion?: string | null;
   sleepHours?: number | null;
 };
-
-function prettyDate(s?: string): string {
-  if (!s) return "";
-  return new Date(s).toLocaleDateString(undefined, {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  });
-}
 
 function defaultHeadline(entry: EditorEntry): string {
   if (entry.kind === "check_in") return "Daily note";
@@ -75,12 +49,6 @@ export function Editor({ entry }: { entry: EditorEntry }) {
   const [trapSlugs, setTrapSlugs] = useState<string[]>(initial.traps);
   const [pending, startTransition] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
-  const ta = useRef<HTMLTextAreaElement | null>(null);
-
-  function insertTemplate() {
-    setBody((b) => (b.trim() ? b + "\n\n" + THOUGHT_RECORD_TEMPLATE : THOUGHT_RECORD_TEMPLATE));
-    setTimeout(() => ta.current?.focus(), 0);
-  }
 
   async function save() {
     setSaveError(null);
@@ -94,19 +62,13 @@ export function Editor({ entry }: { entry: EditorEntry }) {
       tags: [...regular, ...trapTags],
     };
     const url = entry.id ? `/api/entries/${entry.id}` : "/api/entries";
-    const method = entry.id ? "PUT" : "POST";
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!res.ok) {
-      setSaveError(await res.text());
+    const res = await fetchJson<{ id: string }>(url, { method: entry.id ? "PUT" : "POST", body: payload });
+    if (!res.ok || !res.data) {
+      setSaveError(res.text || "save failed");
       return;
     }
-    const data = await res.json();
     startTransition(() => {
-      router.push(`/entries/${data.id}`);
+      router.push(`/entries/${res.data!.id}`);
       router.refresh();
     });
   }
@@ -114,7 +76,7 @@ export function Editor({ entry }: { entry: EditorEntry }) {
   async function remove() {
     if (!entry.id) return;
     if (!confirm("Delete this entry?")) return;
-    const res = await fetch(`/api/entries/${entry.id}`, { method: "DELETE" });
+    const res = await fetchJson(`/api/entries/${entry.id}`, { method: "DELETE" });
     if (res.ok) {
       startTransition(() => {
         router.push("/entries");
@@ -130,7 +92,7 @@ export function Editor({ entry }: { entry: EditorEntry }) {
     <>
       {/* Header — read-only summary instead of a raw title input */}
       <div>
-        {entry.createdAt && <Meta>{prettyDate(entry.createdAt).toUpperCase()}</Meta>}
+        {entry.createdAt && <Meta>{formatLongDate(entry.createdAt).toUpperCase()}</Meta>}
         <Display size={28} style={{ marginTop: 4 }}>
           {headline}
         </Display>
@@ -214,9 +176,6 @@ export function Editor({ entry }: { entry: EditorEntry }) {
       />
 
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-        <Btn small onClick={insertTemplate}>
-          insert thought record
-        </Btn>
         <div style={{ flex: 1 }} />
         {entry.id && (
           <Btn small ghost onClick={remove} style={{ color: "var(--color-accent)" }}>

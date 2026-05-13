@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ReactMarkdown from "react-markdown";
 import { supabase } from "@/lib/supabase";
 import {
   Screen,
@@ -43,7 +44,7 @@ export default async function ThemesPage() {
         <Card accent>
           <Meta accent>EMPTY</Meta>
           <Body size={13} style={{ marginTop: 6 }}>
-            No themes generated yet. POST /api/ai/themes with your CRON_SECRET to generate the first one, or wait for the weekly cron.
+            No themes generated yet. Tap ↻ on the dashboard&apos;s memory card to generate one.
           </Body>
         </Card>
       )}
@@ -60,9 +61,9 @@ export default async function ThemesPage() {
                 ))}
               </div>
             )}
-            <Body size={14} style={{ marginTop: 10, whiteSpace: "pre-wrap", lineHeight: 1.55 }}>
-              {t.summary_md}
-            </Body>
+            <div className="theme-md" style={{ marginTop: 10 }}>
+              <ReactMarkdown>{t.summary_md}</ReactMarkdown>
+            </div>
           </Card>
         );
       })}

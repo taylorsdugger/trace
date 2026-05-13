@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Screen, TopBar, Card, Body, Btn } from "@/components/ui";
+import { Screen, TopBar, Card, Body, Btn, IconBtn } from "@/components/ui";
 import { TRAPS } from "@/lib/traps";
 
 export function TrapsPicker() {
@@ -44,15 +44,7 @@ export function TrapsPicker() {
   return (
     <Screen>
       <TopBar
-        left={
-          <button
-            type="button"
-            onClick={leave}
-            style={{ background: "none", border: "none", color: "inherit", font: "inherit", cursor: "pointer", padding: 0 }}
-          >
-            ← back
-          </button>
-        }
+        left={<IconBtn onClick={leave}>← back</IconBtn>}
         title="thinking traps"
         right="?"
       />
