@@ -70,7 +70,7 @@ button:active, [role="button"]:active {
   transform: scale(0.97);
 }
 
-/* Mobile-first frame: edge-to-edge on phones, centered narrow column on desktop. */
+/* Mobile-first frame: edge-to-edge on phones, expanding content column at tablet/desktop. */
 .app-frame {
   width: 100%;
   max-width: 480px;
@@ -78,16 +78,35 @@ button:active, [role="button"]:active {
   margin-right: auto;
 }
 
-@media (min-width: 640px) {
+/* Tablet: wider single column, still centered (no sidebar yet at this width — sidebar kicks in at md = 768). */
+@media (min-width: 640px) and (max-width: 767.98px) {
   html, body {
     background: var(--color-surface-soft);
   }
   .app-frame {
+    max-width: 600px;
     background: var(--color-paper);
     border-left: 1px solid var(--color-ink-line);
     border-right: 1px solid var(--color-ink-line);
     min-height: 100dvh;
     box-shadow: 0 0 60px rgba(26, 23, 20, 0.05);
+  }
+}
+
+/* md+ : sidebar appears in layout; frame fills remaining width up to a comfortable reading max. */
+@media (min-width: 768px) {
+  .app-frame {
+    max-width: 880px;
+    margin-left: 0;
+    margin-right: auto;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .app-frame {
+    max-width: 1040px;
   }
 }
 

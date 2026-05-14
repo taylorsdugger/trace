@@ -10,25 +10,30 @@ type Window = (typeof WINDOWS)[number];
 export function StreakCard({
   streak,
   thisMonth,
-  activeDays,
+  dayCounts,
+  tz,
 }: {
   streak: number;
   thisMonth: number;
-  activeDays: string[];
+  dayCounts: Record<string, number>;
+  tz?: string;
 }) {
   const [window, setWindow] = useState<Window>(14);
   const [open, setOpen] = useState(false);
 
-  const activeSet = useMemo(() => new Set(activeDays), [activeDays]);
   const ribbon = useMemo(() => {
-    const out: boolean[] = [];
+    const out: number[] = [];
     for (let i = window - 1; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      out.push(activeSet.has(dayKey(d)));
+      out.push(dayCounts[dayKey(d, tz)] ?? 0);
     }
     return out;
-  }, [window, activeSet]);
+  }, [window, dayCounts, tz]);
+
+  const maxCount = Math.max(1, ...ribbon);
+  const BAR_MAX = 32;
+  const BAR_MIN = 6;
 
   return (
     <Card>
@@ -111,32 +116,48 @@ export function StreakCard({
           )}
         </div>
       </div>
-      <div style={{ display: "flex", gap: 3, marginTop: 12 }}>
-        {ribbon.map((f, i) => (
-          <div
-            key={i}
-            style={{
-              flex: 1,
-              height: 22,
-              borderRadius: 4,
-              background: f ? "var(--color-ink)" : "var(--color-surface-soft)",
-              border: f ? "none" : "1px solid var(--color-ink-line)",
-              position: "relative",
-            }}
-          >
-            {i === ribbon.length - 1 && (
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  borderRadius: 4,
-                  boxShadow:
-                    "0 0 0 2px var(--color-paper), 0 0 0 3px var(--color-accent)",
-                }}
-              />
-            )}
-          </div>
-        ))}
+      <div
+        style={{
+          display: "flex",
+          gap: 3,
+          marginTop: 12,
+          alignItems: "flex-end",
+          height: BAR_MAX,
+        }}
+      >
+        {ribbon.map((count, i) => {
+          const isLast = i === ribbon.length - 1;
+          const hasEntry = count > 0;
+          const height = hasEntry
+            ? BAR_MIN + ((BAR_MAX - BAR_MIN) * count) / maxCount
+            : BAR_MIN;
+          return (
+            <div
+              key={i}
+              title={`${count} ${count === 1 ? "entry" : "entries"}`}
+              style={{
+                flex: 1,
+                height,
+                borderRadius: 4,
+                background: hasEntry ? "var(--color-ink)" : "var(--color-surface-soft)",
+                border: hasEntry ? "none" : "1px solid var(--color-ink-line)",
+                position: "relative",
+              }}
+            >
+              {isLast && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    borderRadius: 4,
+                    boxShadow:
+                      "0 0 0 2px var(--color-paper), 0 0 0 3px var(--color-accent)",
+                  }}
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
     </Card>
   );

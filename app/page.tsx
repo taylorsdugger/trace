@@ -1,14 +1,15 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { supabase } from "@/lib/supabase";
 import { Screen, TopBar, Card, Display, Heading, Body, Meta, MoodDot, TabBar, TraceLogo } from "@/components/ui";
 import { QUADRANT_COLORS } from "@/lib/emotions";
-import { dayKey } from "@/lib/dates";
+import { dayKey, TZ_COOKIE } from "@/lib/dates";
 import { MemoryCard } from "@/components/MemoryCard";
 import { StreakCard } from "@/components/StreakCard";
 
 export const dynamic = "force-dynamic";
 
-async function loadDashboard() {
+async function loadDashboard(tz: string | undefined) {
   const sb = supabase();
   const since = new Date(Date.now() - 30 * 86400 * 1000).toISOString();
 
@@ -25,64 +26,80 @@ async function loadDashboard() {
       .order("created_at", { ascending: false }),
   ]);
 
-  const datesSet = new Set<string>();
-  for (const r of datesRes.data ?? []) datesSet.add(dayKey(r.created_at));
+  const dayCounts: Record<string, number> = {};
+  for (const r of datesRes.data ?? []) {
+    const k = dayKey(r.created_at, tz);
+    dayCounts[k] = (dayCounts[k] ?? 0) + 1;
+  }
 
+  const today = dayKey(new Date(), tz);
   // Streak: consecutive days ending today (or yesterday if today blank)
   let streak = 0;
   for (let i = 0; ; i++) {
     const d = new Date();
     d.setDate(d.getDate() - i);
-    if (datesSet.has(dayKey(d))) streak++;
-    else if (i === 0) continue;
+    const k = dayKey(d, tz);
+    if (dayCounts[k]) streak++;
+    else if (k === today) continue;
     else break;
   }
 
-  const now = new Date();
-  const monthStart = dayKey(new Date(now.getFullYear(), now.getMonth(), 1));
+  const monthStart = today.slice(0, 7);
   let thisMonth = 0;
-  for (const day of datesSet) if (day >= monthStart) thisMonth++;
+  for (const day of Object.keys(dayCounts)) if (day.startsWith(monthStart)) thisMonth++;
 
   return {
     latestTheme: themesRes.data?.[0] ?? null,
     streak,
     thisMonth,
-    activeDays: Array.from(datesSet),
+    dayCounts,
   };
 }
 
-function greeting(date: Date): string {
-  const h = date.getHours();
-  if (h < 5) return "Still up.";
-  if (h < 12) return "Good morning.";
-  if (h < 17) return "Good afternoon.";
-  if (h < 21) return "Good evening.";
+function hourInTz(date: Date, tz: string | undefined): number {
+  if (!tz) return date.getHours();
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz,
+    hour: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+  const h = parts.find((p) => p.type === "hour")?.value ?? "0";
+  return Number(h);
+}
+
+function greeting(hour: number): string {
+  if (hour < 5) return "Still up.";
+  if (hour < 12) return "Good morning.";
+  if (hour < 17) return "Good afternoon.";
+  if (hour < 21) return "Good evening.";
   return "Late night.";
 }
 
 export default async function HomePage() {
+  const tz = (await cookies()).get(TZ_COOKIE)?.value;
   let data: Awaited<ReturnType<typeof loadDashboard>> | null = null;
   let error: string | null = null;
   try {
-    data = await loadDashboard();
+    data = await loadDashboard(tz);
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
   }
 
   const now = new Date();
   const dayMeta = now
-    .toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })
+    .toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", timeZone: tz })
     .toUpperCase()
     .replace(",", " ·");
+  const hour = hourInTz(now, tz);
 
   return (
     <Screen>
-      <TopBar left={<TraceLogo size={20} />} />
+      <TopBar left={<TraceLogo size={28} />} />
 
       <div>
         <Meta>{dayMeta}</Meta>
         <Display size={36} style={{ marginTop: 4 }}>
-          {greeting(now)}
+          {greeting(hour)}
         </Display>
       </div>
 
@@ -99,7 +116,8 @@ export default async function HomePage() {
       <StreakCard
         streak={data?.streak ?? 0}
         thisMonth={data?.thisMonth ?? 0}
-        activeDays={data?.activeDays ?? []}
+        dayCounts={data?.dayCounts ?? {}}
+        tz={tz}
       />
 
       {/* mood pulse */}

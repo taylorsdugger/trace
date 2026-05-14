@@ -1,10 +1,28 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Screen, TopBar, Card, Display, Body, Meta, Btn, TabBar } from "@/components/ui";
+import { dayKey } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
 const DAY_LABELS = ["M", "T", "W", "T", "F", "S", "S"];
+
+function stripMd(s: string): string {
+  return s
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/_([^_]+)_/g, "$1")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+    .replace(/^\s{0,3}>\s?/gm, "")
+    .replace(/^\s{0,3}[-*+]\s+/gm, "")
+    .replace(/^\s{0,3}\d+\.\s+/gm, "")
+    .replace(/^\s*[-*_]{3,}\s*$/gm, "")
+    .trim();
+}
 
 async function loadReflection() {
   const sb = supabase();
@@ -21,13 +39,13 @@ async function loadReflection() {
   // 7-day pattern presence
   const days: { label: string; has: boolean }[] = [];
   const dateSet = new Set<string>();
-  for (const r of entriesRes.data ?? []) dateSet.add(new Date(r.created_at).toISOString().slice(0, 10));
+  for (const r of entriesRes.data ?? []) dateSet.add(dayKey(r.created_at));
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const dow = d.getDay(); // 0 = Sun
     const label = DAY_LABELS[(dow + 6) % 7];
-    days.push({ label, has: dateSet.has(d.toISOString().slice(0, 10)) });
+    days.push({ label, has: dateSet.has(dayKey(d)) });
   }
   const entryCount = days.filter((d) => d.has).length;
   return { theme: themesRes.data?.[0] ?? null, days, entryCount };
@@ -42,15 +60,17 @@ export default async function ReflectionPage() {
     error = e instanceof Error ? e.message : String(e);
   }
 
-  const headline = data?.theme?.summary_md
-    ? data.theme.summary_md.split("\n").slice(0, 3).join("\n")
+  const cleanedLines = data?.theme?.summary_md
+    ? stripMd(data.theme.summary_md)
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean)
+    : null;
+  const headline = cleanedLines
+    ? cleanedLines.slice(0, 3).join("\n")
     : "Trace will surface a pattern here\nonce you've journaled for\na few days.";
   const commonThread =
-    data?.theme?.summary_md
-      ?.split("\n")
-      .slice(3)
-      .join(" ")
-      .trim() ||
+    cleanedLines?.slice(3).join(" ").trim() ||
     "Common threads will appear once a weekly summary has been generated.";
   const days = data?.days ?? Array(7).fill({ label: "·", has: false });
 

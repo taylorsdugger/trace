@@ -6,13 +6,9 @@ type Div = { children?: ReactNode; style?: CSSProperties; className?: string };
 export function Screen({ children, scroll, style, className }: Div & { scroll?: boolean }) {
   return (
     <div
-      className={`app-frame ${className ?? ""}`}
+      className={`app-frame flex flex-col gap-[14px] pt-2 px-[18px] pb-[calc(72px+env(safe-area-inset-bottom))] md:px-8 md:pb-8 ${className ?? ""}`}
       style={{
         minHeight: "100dvh",
-        display: "flex",
-        flexDirection: "column",
-        padding: "8px 18px 14px",
-        gap: 14,
         overflow: scroll ? "auto" : undefined,
         ...style,
       }}
@@ -33,7 +29,7 @@ export function TopBar({
 }) {
   const side: CSSProperties = {
     minWidth: 60,
-    font: "500 13px var(--font-geist-sans), sans-serif",
+    font: "500 15px var(--font-geist-sans), sans-serif",
     color: "var(--color-ink-soft)",
   };
   return (
@@ -51,7 +47,7 @@ export function TopBar({
         style={{
           flex: 1,
           textAlign: "center",
-          font: "500 13px var(--font-geist-sans), sans-serif",
+          font: "500 15px var(--font-geist-sans), sans-serif",
           color: "var(--color-ink-soft)",
           letterSpacing: 0.5,
           textTransform: "lowercase",
@@ -226,7 +222,7 @@ export function Btn({
         };
   const base: CSSProperties = {
     cursor: "pointer",
-    font: `500 ${small ? 13 : 14}px var(--font-geist-sans), sans-serif`,
+    font: `500 ${small ? 14 : 16}px var(--font-geist-sans), sans-serif`,
     letterSpacing: 0.1,
     padding: small ? "7px 12px" : "11px 18px",
     borderRadius: 999,
@@ -473,12 +469,24 @@ export function TabBar({ active = 0 }: { active?: 0 | 1 | 2 | 3 }) {
   ];
   return (
     <div
+      className="flex md:hidden"
       style={{
-        display: "flex",
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        marginLeft: "auto",
+        marginRight: "auto",
+        width: "100%",
+        maxWidth: 600,
         justifyContent: "space-around",
         paddingTop: 10,
+        paddingBottom: "calc(10px + env(safe-area-inset-bottom))",
+        paddingLeft: 18,
+        paddingRight: 18,
+        background: "var(--color-paper)",
         borderTop: "1px solid var(--color-ink-line)",
-        marginTop: "auto",
+        zIndex: 10,
       }}
     >
       {tabs.map((t, i) => {
@@ -498,7 +506,7 @@ export function TabBar({ active = 0 }: { active?: 0 | 1 | 2 | 3 }) {
           >
             <div
               style={{
-                font: "16px var(--font-geist-sans), sans-serif",
+                font: "20px var(--font-geist-sans), sans-serif",
                 opacity: isActive ? 1 : 0.6,
               }}
             >
@@ -506,7 +514,7 @@ export function TabBar({ active = 0 }: { active?: 0 | 1 | 2 | 3 }) {
             </div>
             <div
               style={{
-                font: "500 10px var(--font-geist-sans), sans-serif",
+                font: "500 12px var(--font-geist-sans), sans-serif",
                 letterSpacing: 0.3,
               }}
             >

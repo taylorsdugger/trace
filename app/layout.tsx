@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { SideNav } from "@/components/SideNav";
+import { TzCookie } from "@/components/TzCookie";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,7 +42,11 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col md:flex-row">
+        <TzCookie />
+        <SideNav />
+        <main className="flex-1 flex flex-col min-w-0">{children}</main>
+      </body>
     </html>
   );
 }

@@ -23,6 +23,9 @@ import {
 } from "@/lib/emotions";
 import { TRAPS } from "@/lib/traps";
 import { fetchJson, streamText } from "@/lib/fetch";
+import { startOfLocalDay, endOfLocalDay } from "@/lib/dates";
+
+const CUSTOM_TAGS_KEY = "trace.customContextTags";
 
 function readSession<T>(key: string): T | null {
   if (typeof window === "undefined") return null;
@@ -81,6 +84,10 @@ export function NewEntry() {
   const [mood, setMood] = useState<StoredMood | null>(null);
   const [sleep, setSleep] = useState<string>("");
   const [contextTags, setContextTags] = useState<Set<string>>(new Set([]));
+  const [customTags, setCustomTags] = useState<string[]>([]);
+  const [tagDraft, setTagDraft] = useState<string>("");
+  const [showTagInput, setShowTagInput] = useState(false);
+  const [sleepAutoFilled, setSleepAutoFilled] = useState(false);
 
   // Quick fields
   const [note, setNote] = useState("");
@@ -145,8 +152,37 @@ export function NewEntry() {
       setSelectedTraps(t);
       sessionStorage.removeItem("trace.traps");
     }
+    try {
+      const raw = localStorage.getItem(CUSTOM_TAGS_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setCustomTags(parsed.filter((s) => typeof s === "string"));
+      }
+    } catch {
+      // ignore
+    }
     setHydrated(true);
   }, []);
+
+  // Auto-fill sleep from earlier check-ins on the same local day.
+  useEffect(() => {
+    if (!hydrated) return;
+    if (sleep !== "" || sleepAutoFilled) return;
+    const start = startOfLocalDay().toISOString();
+    const end = endOfLocalDay().toISOString();
+    const ac = new AbortController();
+    fetchJson<{ sleep_hours: number | null }>(
+      `/api/check-ins/today?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`,
+      { signal: ac.signal },
+    ).then((res) => {
+      if (!res.ok || !res.data) return;
+      if (res.data.sleep_hours != null && sleep === "") {
+        setSleep(String(res.data.sleep_hours));
+        setSleepAutoFilled(true);
+      }
+    });
+    return () => ac.abort();
+  }, [hydrated, sleep, sleepAutoFilled]);
 
   useEffect(() => {
     if (!hydrated || typeof window === "undefined") return;
@@ -169,6 +205,29 @@ export function NewEntry() {
   }, [hydrated, mode, note, sleep, contextTags, situation, automatic, evidenceFor, evidenceAgainst, reframe, selectedTraps]);
 
   const detectedTrap = useMemo(() => detectTrap(automatic), [automatic]);
+
+  function commitCustomTag() {
+    const raw = tagDraft.trim().toLowerCase().replace(/\s+/g, " ");
+    setTagDraft("");
+    setShowTagInput(false);
+    if (!raw) return;
+    const exists =
+      (CONTEXT_TAG_OPTIONS as readonly string[]).includes(raw) || customTags.includes(raw);
+    if (!exists) {
+      const next = [...customTags, raw];
+      setCustomTags(next);
+      try {
+        localStorage.setItem(CUSTOM_TAGS_KEY, JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+    }
+    setContextTags((prev) => {
+      const n = new Set(prev);
+      n.add(raw);
+      return n;
+    });
+  }
 
   function toggleTag(tag: string) {
     setContextTags((prev) => {
@@ -515,12 +574,58 @@ export function NewEntry() {
 
           <div>
             <Meta style={{ marginBottom: 6 }}>CONTEXT</Meta>
-            <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 5, flexWrap: "wrap", alignItems: "center" }}>
               {CONTEXT_TAG_OPTIONS.map((t) => (
                 <Chip key={t} active={contextTags.has(t)} onClick={() => toggleTag(t)}>
                   {t}
                 </Chip>
               ))}
+              {customTags.map((t) => (
+                <Chip key={t} active={contextTags.has(t)} onClick={() => toggleTag(t)}>
+                  {t}
+                </Chip>
+              ))}
+              {showTagInput ? (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 4,
+                    padding: "3px 6px 3px 10px",
+                    borderRadius: 999,
+                    border: "1px solid var(--color-ink-line)",
+                    background: "var(--color-paper)",
+                  }}
+                >
+                  <input
+                    autoFocus
+                    value={tagDraft}
+                    onChange={(e) => setTagDraft(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        commitCustomTag();
+                      } else if (e.key === "Escape") {
+                        setTagDraft("");
+                        setShowTagInput(false);
+                      }
+                    }}
+                    onBlur={() => commitCustomTag()}
+                    placeholder="new tag"
+                    style={{
+                      border: "none",
+                      outline: "none",
+                      background: "transparent",
+                      font: "500 12px var(--font-geist-sans), sans-serif",
+                      color: "var(--color-ink)",
+                      width: 80,
+                      padding: 0,
+                    }}
+                  />
+                </span>
+              ) : (
+                <Chip onClick={() => setShowTagInput(true)}>+ add</Chip>
+              )}
             </div>
           </div>
 
