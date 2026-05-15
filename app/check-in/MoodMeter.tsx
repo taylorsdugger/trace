@@ -1,65 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   EMOTIONS,
+  EMOTION_GRID,
+  EMOTION_GRID_POSITIONS,
   QUADRANT_COLORS,
+  valenceOf,
+  energyOf,
   type Emotion,
 } from "@/lib/emotions";
 import { Screen, TopBar, Body, Meta } from "@/components/ui";
 
-// Curated (x, y) plot positions in 0..1 space. (0,0) = top-left, (1,1) = bottom-right.
-// Top = high energy, bottom = low energy. Left = unpleasant, right = pleasant.
-// Hand-tuned to avoid bubble overlap while keeping each in the correct quadrant.
-const POSITIONS: Record<string, { x: number; y: number }> = {
-  // red — high energy, unpleasant (top-left)
-  angry: { x: 0.12, y: 0.08 },
-  overwhelmed: { x: 0.13, y: 0.27 },
-  stressed: { x: 0.33, y: 0.14 },
-  anxious: { x: 0.34, y: 0.34 },
-  frustrated: { x: 0.21, y: 0.45 },
-  // yellow — high energy, pleasant (top-right)
-  excited: { x: 0.9, y: 0.06 },
-  joyful: { x: 0.7, y: 0.18 },
-  energized: { x: 0.87, y: 0.25 },
-  hopeful: { x: 0.66, y: 0.38 },
-  proud: { x: 0.86, y: 0.43 },
-  // blue — low energy, unpleasant (bottom-left)
-  drained: { x: 0.12, y: 0.92 },
-  sad: { x: 0.3, y: 0.78 },
-  lonely: { x: 0.12, y: 0.72 },
-  discouraged: { x: 0.32, y: 0.6 },
-  bored: { x: 0.43, y: 0.86 },
-  // green — low energy, pleasant (bottom-right)
-  peaceful: { x: 0.9, y: 0.95 },
-  relaxed: { x: 0.72, y: 0.78 },
-  calm: { x: 0.88, y: 0.63 },
-  content: { x: 0.68, y: 0.92 },
-  grateful: { x: 0.6, y: 0.6 },
-};
-
-const BUBBLE_SIZE = 72;
+const BUBBLE_SIZE = 80;
+const GRID_PX_WIDTH = BUBBLE_SIZE * EMOTION_GRID.cols;
+const GRID_PX_HEIGHT = BUBBLE_SIZE * EMOTION_GRID.rows;
 
 function fontSizeFor(word: string) {
-  if (word.length >= 11) return 10;
-  if (word.length >= 9) return 11;
-  if (word.length >= 7) return 12;
-  return 13;
+  if (word.length >= 11) return 11;
+  if (word.length >= 9) return 12;
+  if (word.length >= 7) return 13;
+  return 14;
+}
+
+function clamp01(n: number) {
+  return n < 0 ? 0 : n > 1 ? 1 : n;
 }
 
 function Bubble({
   emotion,
   selected,
   onPick,
-  x,
-  y,
+  col,
+  row,
 }: {
   emotion: Emotion;
   selected: boolean;
   onPick: (e: Emotion) => void;
-  x: number;
-  y: number;
+  col: number;
+  row: number;
 }) {
   return (
     <button
@@ -67,9 +47,8 @@ function Bubble({
       onClick={() => onPick(emotion)}
       aria-pressed={selected}
       style={{
-        position: "absolute",
-        left: `calc(${x * 100}% - ${BUBBLE_SIZE / 2}px)`,
-        top: `calc(${y * 100}% - ${BUBBLE_SIZE / 2}px)`,
+        gridColumnStart: col + 1,
+        gridRowStart: row + 1,
         width: BUBBLE_SIZE,
         height: BUBBLE_SIZE,
         borderRadius: "50%",
@@ -114,7 +93,10 @@ function AxisLabel({
         textTransform: "uppercase",
         pointerEvents: "none",
         background: "var(--color-paper)",
-        padding: "0 6px",
+        padding: "2px 6px",
+        borderRadius: 999,
+        border: "1px solid var(--color-ink-line)",
+        zIndex: 4,
         ...style,
       }}
     >
@@ -130,6 +112,102 @@ export function MoodMeter() {
   const [selected, setSelected] = useState<Emotion | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const targetRef = useRef<{ x: number; y: number } | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  // Center the grid on (0.5, 0.5) on mount so the user starts at the origin.
+  useLayoutEffect(() => {
+    const v = viewportRef.current;
+    if (!v) return;
+    v.scrollLeft = (v.scrollWidth - v.clientWidth) / 2;
+    v.scrollTop = (v.scrollHeight - v.clientHeight) / 2;
+  }, []);
+
+  // Mouse-follow panning on fine pointers only. Coarse pointers keep native touch scroll.
+  useEffect(() => {
+    const v = viewportRef.current;
+    if (!v) return;
+    if (typeof window === "undefined" || !window.matchMedia) return;
+
+    const mq = window.matchMedia("(pointer: fine)");
+    let attached = false;
+
+    function tick() {
+      const target = targetRef.current;
+      const node = viewportRef.current;
+      if (!target || !node) {
+        rafRef.current = null;
+        return;
+      }
+      const dx = target.x - node.scrollLeft;
+      const dy = target.y - node.scrollTop;
+      if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
+        node.scrollLeft = target.x;
+        node.scrollTop = target.y;
+        rafRef.current = null;
+        return;
+      }
+      node.scrollLeft += dx * 0.12;
+      node.scrollTop += dy * 0.12;
+      rafRef.current = requestAnimationFrame(tick);
+    }
+
+    function onMove(e: MouseEvent) {
+      const node = viewportRef.current;
+      if (!node) return;
+      const rect = node.getBoundingClientRect();
+      const fx = clamp01((e.clientX - rect.left) / rect.width);
+      const fy = clamp01((e.clientY - rect.top) / rect.height);
+      targetRef.current = {
+        x: fx * (node.scrollWidth - node.clientWidth),
+        y: fy * (node.scrollHeight - node.clientHeight),
+      };
+      if (rafRef.current == null) {
+        rafRef.current = requestAnimationFrame(tick);
+      }
+    }
+
+    function onLeave() {
+      targetRef.current = null;
+      if (rafRef.current != null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    }
+
+    function attach() {
+      if (attached || !v) return;
+      v.addEventListener("mousemove", onMove);
+      v.addEventListener("mouseleave", onLeave);
+      attached = true;
+    }
+    function detach() {
+      if (!attached || !v) return;
+      v.removeEventListener("mousemove", onMove);
+      v.removeEventListener("mouseleave", onLeave);
+      attached = false;
+      onLeave();
+    }
+
+    if (mq.matches) attach();
+
+    function onChange(ev: MediaQueryListEvent) {
+      if (ev.matches) attach();
+      else detach();
+    }
+    mq.addEventListener("change", onChange);
+
+    return () => {
+      mq.removeEventListener("change", onChange);
+      detach();
+      if (rafRef.current != null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, []);
+
   function confirm() {
     if (!selected) return;
     setError(null);
@@ -138,8 +216,8 @@ export function MoodMeter() {
         "trace.mood",
         JSON.stringify({
           emotion: selected.word,
-          valence: selected.valence,
-          energy: selected.energy,
+          valence: valenceOf(selected),
+          energy: energyOf(selected),
           quadrant: selected.quadrant,
           at: Date.now(),
         })
@@ -149,7 +227,7 @@ export function MoodMeter() {
   }
 
   return (
-    <Screen style={{ paddingBottom: 24 }}>
+    <Screen style={{ paddingBottom: 24, height: "100dvh", minHeight: 0, overflow: "hidden" }}>
       <TopBar
         left={
           <button
@@ -180,48 +258,77 @@ export function MoodMeter() {
 
       <div
         style={{
-          position: "relative",
-          flex: 1,
+          flex: "1 1 auto",
           minHeight: 0,
-          marginInline: -4,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
-        {/* axes */}
         <div
-          aria-hidden
+          style={{
+            position: "relative",
+            height: "100%",
+            aspectRatio: "1 / 1",
+            maxWidth: "100%",
+          }}
+        >
+        {/* Pannable viewport */}
+        <div
+          ref={viewportRef}
+          className="mood-viewport"
           style={{
             position: "absolute",
-            left: 0,
-            right: 0,
-            top: "50%",
-            height: 1,
-            background: "var(--color-ink-line)",
+            inset: 0,
+            overflow: "auto",
+            overscrollBehavior: "contain",
+            touchAction: "pan-x pan-y",
+            borderRadius: 18,
+            border: "1px solid var(--color-ink-line)",
+            background: "var(--color-paper)",
+            boxShadow: "inset 0 0 0 1px rgba(26,23,20,0.02)",
+            padding: 6,
           }}
-        />
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            left: "50%",
-            width: 1,
-            background: "var(--color-ink-line)",
-          }}
-        />
+        >
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${EMOTION_GRID.cols}, ${BUBBLE_SIZE}px)`,
+              gridTemplateRows: `repeat(${EMOTION_GRID.rows}, ${BUBBLE_SIZE}px)`,
+              gap: 0,
+              width: GRID_PX_WIDTH,
+              height: GRID_PX_HEIGHT,
+            }}
+          >
+            {EMOTIONS.map((e) => {
+              const pos = EMOTION_GRID_POSITIONS[e.word];
+              if (!pos) return null;
+              return (
+                <Bubble
+                  key={e.word}
+                  emotion={e}
+                  selected={selected?.word === e.word}
+                  onPick={setSelected}
+                  col={pos.col}
+                  row={pos.row}
+                />
+              );
+            })}
+          </div>
+        </div>
 
-        {/* axis labels */}
-        <AxisLabel style={{ top: -4, left: "50%", transform: "translateX(-50%)" }}>
+        {/* Axis labels overlay the viewport so they stay fixed while panning */}
+        <AxisLabel style={{ top: 8, left: "50%", transform: "translateX(-50%)" }}>
           high energy
         </AxisLabel>
-        <AxisLabel style={{ bottom: -4, left: "50%", transform: "translateX(-50%)" }}>
+        <AxisLabel style={{ bottom: 8, left: "50%", transform: "translateX(-50%)" }}>
           low energy
         </AxisLabel>
         <AxisLabel
           style={{
-            left: -4,
+            left: 8,
             top: "50%",
-            transform: "translate(-50%, -50%) rotate(-90deg)",
+            transform: "translateY(-50%) rotate(-90deg)",
             transformOrigin: "center",
           }}
         >
@@ -229,29 +336,15 @@ export function MoodMeter() {
         </AxisLabel>
         <AxisLabel
           style={{
-            right: -4,
+            right: 8,
             top: "50%",
-            transform: "translate(50%, -50%) rotate(90deg)",
+            transform: "translateY(-50%) rotate(90deg)",
             transformOrigin: "center",
           }}
         >
           pleasant
         </AxisLabel>
-
-        {/* bubbles */}
-        {EMOTIONS.map((e) => {
-          const pos = POSITIONS[e.word] ?? { x: 0.5, y: 0.5 };
-          return (
-            <Bubble
-              key={e.word}
-              emotion={e}
-              selected={selected?.word === e.word}
-              onPick={setSelected}
-              x={pos.x}
-              y={pos.y}
-            />
-          );
-        })}
+        </div>
       </div>
 
       {error && (
@@ -291,18 +384,20 @@ export function MoodMeter() {
               >
                 {selected.word}
               </div>
-              <div
-                style={{
-                  font: "400 12px/1.35 var(--font-geist-sans), sans-serif",
-                  color: "rgba(255,255,255,0.78)",
-                  marginTop: 2,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {selected.definition}
-              </div>
+              {selected.definition && (
+                <div
+                  style={{
+                    font: "400 12px/1.35 var(--font-geist-sans), sans-serif",
+                    color: "rgba(255,255,255,0.78)",
+                    marginTop: 2,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {selected.definition}
+                </div>
+              )}
             </>
           ) : (
             <div

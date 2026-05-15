@@ -1,7 +1,7 @@
 import { supabase } from "./supabase";
 import { embed } from "./openrouter";
 
-export function chunkParagraphs(text: string, maxChars = 1200): string[] {
+function chunkParagraphs(text: string, maxChars = 1200): string[] {
   const paragraphs = text
     .split(/\n\s*\n+/)
     .map((p) => p.trim())

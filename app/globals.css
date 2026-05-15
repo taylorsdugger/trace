@@ -123,6 +123,14 @@ input:focus, textarea:focus {
   outline: none;
 }
 
+/* Mood-meter pannable viewport: hide scrollbars so the grid feels like a window. */
+.mood-viewport {
+  scrollbar-width: none;
+}
+.mood-viewport::-webkit-scrollbar {
+  display: none;
+}
+
 /* Rendered markdown inside theme/summary cards */
 .theme-md {
   font: 400 14px/1.55 var(--font-geist-sans), sans-serif;
