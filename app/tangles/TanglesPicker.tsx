@@ -74,11 +74,11 @@ export function TanglesPicker() {
               style={{
                 padding: 12,
                 minHeight: 86,
-                background: picked ? "var(--color-ink)" : "var(--color-surface)",
-                color: picked ? "var(--color-surface)" : "var(--color-ink)",
+                background: picked ? "var(--ink)" : "var(--surface)",
+                color: picked ? "var(--surface)" : "var(--ink)",
                 border: picked
-                  ? "1px solid var(--color-ink)"
-                  : "1px solid var(--color-ink-line)",
+                  ? "1px solid var(--ink)"
+                  : "1px solid var(--hairline)",
                 display: "flex",
                 flexDirection: "column",
                 gap: 4,
@@ -87,8 +87,8 @@ export function TanglesPicker() {
             >
               <div
                 style={{
-                  font: "18px var(--font-instrument-serif), serif",
-                  color: "var(--color-accent)",
+                  font: "18px var(--font-serif), serif",
+                  color: "var(--moss)",
                   opacity: picked ? 1 : 0.85,
                 }}
               >
@@ -96,8 +96,8 @@ export function TanglesPicker() {
               </div>
               <div
                 style={{
-                  font: "500 13px var(--font-geist-sans), sans-serif",
-                  color: picked ? "var(--color-surface)" : "var(--color-ink)",
+                  font: "500 13px var(--font-sans), sans-serif",
+                  color: picked ? "var(--surface)" : "var(--ink)",
                   marginTop: "auto",
                 }}
               >
@@ -105,8 +105,8 @@ export function TanglesPicker() {
               </div>
               <div
                 style={{
-                  font: "11px/1.3 var(--font-geist-sans), sans-serif",
-                  color: picked ? "rgba(247,242,232,0.65)" : "var(--color-ink-soft)",
+                  font: "11px/1.3 var(--font-sans), sans-serif",
+                  color: picked ? "rgba(247,242,232,0.65)" : "var(--ink-soft)",
                 }}
               >
                 {t.desc}

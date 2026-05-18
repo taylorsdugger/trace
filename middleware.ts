@@ -17,6 +17,15 @@ const RENAMES: Array<[RegExp, string]> = [
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Vercel cron hits this endpoint with `Authorization: Bearer $CRON_SECRET`;
+  // let it through without a session cookie.
+  if (pathname === "/api/ai/rings") {
+    const secret = process.env.CRON_SECRET;
+    if (secret && req.headers.get("authorization") === `Bearer ${secret}`) {
+      return NextResponse.next();
+    }
+  }
+
   for (const [pattern, base] of RENAMES) {
     const m = pathname.match(pattern);
     if (m) {

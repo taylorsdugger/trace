@@ -45,9 +45,9 @@ function Bubble({
 }) {
   const scale = selected ? 1.22 : focused ? 1.18 : 1;
   const shadow = selected
-    ? `0 0 0 3px var(--color-paper), 0 0 0 5px var(--color-ink), 0 12px 28px rgba(26,23,20,0.18)`
+    ? `0 0 0 3px var(--paper), 0 0 0 5px var(--ink), 0 12px 28px rgba(26,23,20,0.18)`
     : focused
-      ? `0 0 0 2px var(--color-paper), 0 10px 24px rgba(26,23,20,0.16)`
+      ? `0 0 0 2px var(--paper), 0 10px 24px rgba(26,23,20,0.16)`
       : "0 1px 2px rgba(26,23,20,0.06)";
   return (
     <button
@@ -62,10 +62,10 @@ function Bubble({
         height: BUBBLE_SIZE,
         borderRadius: "50%",
         background: QUADRANT_COLORS[emotion.quadrant],
-        color: "var(--color-ink)",
+        color: "var(--ink)",
         border: "none",
         padding: 0,
-        font: `500 ${fontSizeFor(emotion.word)}px var(--font-geist-sans), sans-serif`,
+        font: `500 ${fontSizeFor(emotion.word)}px var(--font-sans), sans-serif`,
         letterSpacing: -0.1,
         cursor: "pointer",
         display: "flex",
@@ -95,15 +95,15 @@ function AxisLabel({
     <div
       style={{
         position: "absolute",
-        font: "500 9px var(--font-jetbrains-mono), monospace",
-        color: "var(--color-ink-soft)",
+        font: "500 9px var(--font-mono), monospace",
+        color: "var(--ink-soft)",
         letterSpacing: 0.6,
         textTransform: "uppercase",
         pointerEvents: "none",
-        background: "var(--color-paper)",
+        background: "var(--paper)",
         padding: "2px 6px",
         borderRadius: 999,
-        border: "1px solid var(--color-ink-line)",
+        border: "1px solid var(--hairline)",
         zIndex: 4,
         ...style,
       }}
@@ -319,15 +319,15 @@ export function MoodMeter() {
             type="button"
             onClick={() => router.push(next)}
             style={{
-              background: "var(--color-surface-soft)",
-              border: "1px solid var(--color-ink-line)",
+              background: "var(--bone)",
+              border: "1px solid var(--hairline)",
               borderRadius: 999,
               width: 32,
               height: 32,
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "var(--color-ink)",
+              color: "var(--ink)",
               cursor: "pointer",
               font: "inherit",
               padding: 0,
@@ -337,7 +337,7 @@ export function MoodMeter() {
             ←
           </button>
         }
-        title={<Meta>HOW DO YOU FEEL</Meta>}
+        title={<Meta>WHERE ARE YOU RIGHT NOW?</Meta>}
         right={null}
       />
 
@@ -369,8 +369,8 @@ export function MoodMeter() {
             overscrollBehavior: "contain",
             touchAction: "pan-x pan-y",
             borderRadius: 36,
-            border: "1px solid var(--color-ink-line)",
-            background: "var(--color-paper)",
+            border: "1px solid var(--hairline)",
+            background: "var(--paper)",
             boxShadow: "inset 0 0 0 1px rgba(26,23,20,0.02)",
             padding: `${gutter.y}px ${gutter.x}px`,
           }}
@@ -444,7 +444,7 @@ export function MoodMeter() {
       </div>
 
       {error && (
-        <Body size={13} style={{ color: "var(--color-accent)" }}>
+        <Body size={13} style={{ color: "var(--moss)" }}>
           {error}
         </Body>
       )}
@@ -455,8 +455,8 @@ export function MoodMeter() {
         disabled={!selected}
         style={{
           width: "100%",
-          background: "var(--color-ink)",
-          color: "var(--color-surface)",
+          background: "var(--ink)",
+          color: "var(--surface)",
           border: "none",
           borderRadius: 999,
           padding: "12px 8px 12px 20px",
@@ -473,7 +473,7 @@ export function MoodMeter() {
             <>
               <div
                 style={{
-                  font: "500 16px var(--font-geist-sans), sans-serif",
+                  font: "500 16px var(--font-sans), sans-serif",
                   color: QUADRANT_COLORS[preview.quadrant],
                   lineHeight: 1.2,
                 }}
@@ -483,7 +483,7 @@ export function MoodMeter() {
               {preview.definition && (
                 <div
                   style={{
-                    font: "400 12px/1.35 var(--font-geist-sans), sans-serif",
+                    font: "400 12px/1.35 var(--font-sans), sans-serif",
                     color: "rgba(255,255,255,0.78)",
                     marginTop: 2,
                     overflow: "hidden",
@@ -498,11 +498,11 @@ export function MoodMeter() {
           ) : (
             <div
               style={{
-                font: "400 14px var(--font-geist-sans), sans-serif",
+                font: "400 14px var(--font-sans), sans-serif",
                 color: "rgba(255,255,255,0.7)",
               }}
             >
-              tap a feeling to continue
+              tap what fits — cedar will follow
             </div>
           )}
         </div>
@@ -512,12 +512,12 @@ export function MoodMeter() {
             width: 40,
             height: 40,
             borderRadius: "50%",
-            background: "var(--color-surface)",
-            color: "var(--color-ink)",
+            background: "var(--surface)",
+            color: "var(--ink)",
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            font: "500 18px var(--font-geist-sans), sans-serif",
+            font: "500 18px var(--font-sans), sans-serif",
             flexShrink: 0,
           }}
         >

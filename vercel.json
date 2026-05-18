@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/ai/themes",
+      "path": "/api/ai/rings",
       "schedule": "0 13 * * 0"
     }
   ]

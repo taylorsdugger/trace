@@ -17,11 +17,17 @@ export const dynamic = "force-dynamic";
 export default async function AllRingsPage() {
   const { data } = await supabase()
     .from("themes")
-    .select("id,period_start,period_end,summary_md,top_distortions,generated_at")
+    .select("id,period_start,period_end,summary_md,top_distortions,generated_at,source,window_days")
     .order("generated_at", { ascending: false })
     .limit(20);
 
   const themes = data ?? [];
+
+  // Disambiguate when multiple rings landed on the same period_end.
+  const periodCounts = new Map<string, number>();
+  for (const t of themes) {
+    periodCounts.set(t.period_end, (periodCounts.get(t.period_end) ?? 0) + 1);
+  }
 
   return (
     <Screen scroll>
@@ -51,9 +57,18 @@ export default async function AllRingsPage() {
 
       {themes.map((t) => {
         const range = `${formatDate(t.period_start)} – ${formatDate(t.period_end)}`;
+        const showOrigin = (periodCounts.get(t.period_end) ?? 0) > 1;
         return (
           <Card key={t.id}>
-            <Meta>{range}</Meta>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <Meta>{range}</Meta>
+              {showOrigin && (
+                <Chip>
+                  {t.source === "manual" ? "manual" : "auto"}
+                  {t.window_days ? ` · ${t.window_days}d` : ""}
+                </Chip>
+              )}
+            </div>
             {t.top_distortions?.length > 0 && (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 8 }}>
                 {t.top_distortions.map((d: string) => (

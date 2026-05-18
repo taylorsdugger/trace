@@ -15,6 +15,7 @@ import {
   IconBtn,
   MoodDot,
   TabBar,
+  CedarSprig,
 } from "@/components/ui";
 import {
   QUADRANT_COLORS,
@@ -80,7 +81,8 @@ function detectTrap(text: string): string | null {
 export function NewTrace() {
   const router = useRouter();
   const params = useSearchParams();
-  const initialMode = (params.get("mode") as Mode) || "quick";
+  const urlMode = params.get("mode");
+  const initialMode: Mode = urlMode === "detailed" || urlMode === "quick" ? urlMode : "quick";
   const [mode, setMode] = useState<Mode>(initialMode);
   const [mood, setMood] = useState<StoredMood | null>(null);
   const [sleep, setSleep] = useState<string>("");
@@ -133,7 +135,8 @@ export function NewTrace() {
   useEffect(() => {
     const d = readSession<Partial<Draft>>(DRAFT_KEY);
     if (d) {
-      if (d.mode === "quick" || d.mode === "detailed") setMode(d.mode);
+      // URL ?mode= wins over the saved draft so the link is honored.
+      if (!urlMode && (d.mode === "quick" || d.mode === "detailed")) setMode(d.mode);
       if (typeof d.note === "string") setNote(d.note);
       if (typeof d.sleep === "string") setSleep(d.sleep);
       if (Array.isArray(d.contextTags)) setContextTags(new Set(d.contextTags));
@@ -357,7 +360,7 @@ export function NewTrace() {
     router.push(`/trail/${res.data.id}`);
   }
 
-  const moodColor = mood ? QUADRANT_COLORS[mood.quadrant] : "var(--color-ink-line)";
+  const moodColor = mood ? QUADRANT_COLORS[mood.quadrant] : "var(--hairline)";
 
   return (
     <Screen scroll={mode === "detailed"}>
@@ -368,9 +371,9 @@ export function NewTrace() {
           <IconBtn
             onClick={save}
             disabled={saving}
-            style={{ color: "var(--color-ink)", font: "500 13px var(--font-geist-sans), sans-serif" }}
+            style={{ color: "var(--ink)", font: "500 13px var(--font-sans), sans-serif" }}
           >
-            {saving ? "saving…" : "save"}
+            {saving ? "leaving…" : "leave the trace"}
           </IconBtn>
         }
       />
@@ -378,7 +381,7 @@ export function NewTrace() {
       {/* mode toggle */}
       <div
         style={{
-          background: "var(--color-surface-soft)",
+          background: "var(--bone)",
           borderRadius: 999,
           padding: 3,
           display: "flex",
@@ -396,11 +399,11 @@ export function NewTrace() {
                 flex: 1,
                 textAlign: "center",
                 padding: "7px 0",
-                background: active ? "var(--color-surface)" : "transparent",
+                background: active ? "var(--surface)" : "transparent",
                 borderRadius: 999,
                 border: "none",
-                color: active ? "var(--color-ink)" : "var(--color-ink-soft)",
-                font: "500 13px var(--font-geist-sans), sans-serif",
+                color: active ? "var(--ink)" : "var(--ink-soft)",
+                font: "500 13px var(--font-sans), sans-serif",
                 cursor: "pointer",
                 boxShadow: active ? "0 1px 2px rgba(26,23,20,0.06)" : "none",
               }}
@@ -413,7 +416,7 @@ export function NewTrace() {
 
       {error && (
         <Card>
-          <Body size={13} style={{ color: "var(--color-accent)" }}>
+          <Body size={13} style={{ color: "var(--moss)" }}>
             {error}
           </Body>
         </Card>
@@ -439,8 +442,8 @@ export function NewTrace() {
           </div>
           <div
             style={{
-              font: "14px var(--font-geist-sans), sans-serif",
-              color: "var(--color-ink-soft)",
+              font: "14px var(--font-sans), sans-serif",
+              color: "var(--ink-soft)",
             }}
           >
             ›
@@ -462,8 +465,8 @@ export function NewTrace() {
                 border: "none",
                 outline: "none",
                 background: "transparent",
-                font: "500 22px var(--font-geist-sans), sans-serif",
-                color: "var(--color-ink)",
+                font: "500 22px var(--font-sans), sans-serif",
+                color: "var(--ink)",
                 padding: 0,
               }}
             />
@@ -478,12 +481,12 @@ export function NewTrace() {
       {selectedTrapObjs.length > 0 && (
         <Card>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-            <Meta>THINKING TRAPS</Meta>
+            <Meta>TANGLES</Meta>
             <IconBtn
               onClick={pickTraps}
               style={{
-                color: "var(--color-ink-soft)",
-                font: "500 10px var(--font-jetbrains-mono), monospace",
+                color: "var(--ink-soft)",
+                font: "500 10px var(--font-mono), monospace",
                 letterSpacing: 0.6,
                 textTransform: "uppercase",
               }}
@@ -509,7 +512,7 @@ export function NewTrace() {
               ref={noteRef}
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Woke up tense again…"
+              placeholder="start anywhere. cedar will walk with you."
               style={{
                 marginTop: 8,
                 width: "100%",
@@ -519,17 +522,29 @@ export function NewTrace() {
                 outline: "none",
                 resize: "none",
                 background: "transparent",
-                color: "var(--color-ink)",
-                font: "400 14px/1.55 var(--font-geist-sans), sans-serif",
+                color: "var(--ink)",
+                font: "400 14px/1.55 var(--font-sans), sans-serif",
               }}
             />
           </Card>
 
           <Card accent>
-            <Meta accent>✦ TRACE</Meta>
-            <Body size={13} style={{ marginTop: 6, lineHeight: 1.45 }}>
-              {aiPrompt}
-            </Body>
+            <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+              <CedarSprig size={20} style={{ marginTop: 2 }} />
+              <div style={{ flex: 1 }}>
+                <Meta>cedar</Meta>
+                <Body
+                  size={14}
+                  style={{
+                    marginTop: 3,
+                    lineHeight: 1.5,
+                    fontFamily: "var(--font-serif)",
+                  }}
+                >
+                  {aiPrompt}
+                </Body>
+              </div>
+            </div>
             <div style={{ display: "flex", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
               <Btn small onClick={() => setShowAnswer((v) => !v)}>
                 answer ↓
@@ -538,7 +553,7 @@ export function NewTrace() {
                 {aiLoading ? "thinking…" : "another prompt ↻"}
               </Btn>
               <Btn small ghost onClick={pickTraps}>
-                traps →
+                tangles →
               </Btn>
             </div>
             {showAnswer && (
@@ -551,13 +566,13 @@ export function NewTrace() {
                     marginTop: 10,
                     width: "100%",
                     minHeight: 60,
-                    border: "1px solid var(--color-ink-line)",
+                    border: "1px solid var(--hairline)",
                     outline: "none",
                     borderRadius: 12,
                     padding: 10,
                     background: "transparent",
-                    color: "var(--color-ink)",
-                    font: "400 13px/1.45 var(--font-geist-sans), sans-serif",
+                    color: "var(--ink)",
+                    font: "400 13px/1.45 var(--font-sans), sans-serif",
                     resize: "vertical",
                   }}
                 />
@@ -594,8 +609,8 @@ export function NewTrace() {
                     gap: 4,
                     padding: "3px 6px 3px 10px",
                     borderRadius: 999,
-                    border: "1px solid var(--color-ink-line)",
-                    background: "var(--color-paper)",
+                    border: "1px solid var(--hairline)",
+                    background: "var(--paper)",
                   }}
                 >
                   <input
@@ -617,8 +632,8 @@ export function NewTrace() {
                       border: "none",
                       outline: "none",
                       background: "transparent",
-                      font: "500 12px var(--font-geist-sans), sans-serif",
-                      color: "var(--color-ink)",
+                      font: "500 12px var(--font-sans), sans-serif",
+                      color: "var(--ink)",
                       width: 80,
                       padding: 0,
                     }}
@@ -644,22 +659,30 @@ export function NewTrace() {
 
           {detectedTrap && selectedTrapObjs.length === 0 && (
             <Card accent>
-              <Meta accent>✦ TRACE NOTICED</Meta>
-              <Body size={13} style={{ marginTop: 6, lineHeight: 1.45 }}>
-                This reads like{" "}
+              <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                <CedarSprig size={20} style={{ marginTop: 2 }} />
+                <div style={{ flex: 1 }}>
+                  <Meta>cedar noticed</Meta>
+                  <Body
+                    size={14}
+                    style={{ marginTop: 3, lineHeight: 1.5, fontFamily: "var(--font-serif)" }}
+                  >
+                    This reads like{" "}
                 <Link
                   href={`/tangles?trap=${encodeURIComponent(detectedTrap)}&next=${encodeURIComponent(`/trail/new?mode=${mode}`)}`}
                   style={{
-                    borderBottom: "1px dashed var(--color-accent)",
-                    color: "var(--color-accent)",
+                    borderBottom: "1px dashed var(--moss)",
+                    color: "var(--moss)",
                     fontWeight: 500,
                     textDecoration: "none",
                   }}
                 >
                   {detectedTrap}
                 </Link>
-                . Tap to look at the trap →
-              </Body>
+                . tap to sit with this tangle →
+                  </Body>
+                </div>
+              </div>
             </Card>
           )}
 
@@ -708,8 +731,8 @@ function DetailField({
             border: "none",
             outline: "none",
             background: "transparent",
-            color: "var(--color-ink)",
-            font: "400 13px/1.45 var(--font-geist-sans), sans-serif",
+            color: "var(--ink)",
+            font: "400 13px/1.45 var(--font-sans), sans-serif",
             resize: "vertical",
           }}
         />
@@ -743,8 +766,8 @@ function DetailMini({
           border: "none",
           outline: "none",
           background: "transparent",
-          color: "var(--color-ink)",
-          font: "400 12px/1.4 var(--font-geist-sans), sans-serif",
+          color: "var(--ink)",
+          font: "400 12px/1.4 var(--font-sans), sans-serif",
           resize: "vertical",
         }}
       />

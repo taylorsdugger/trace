@@ -29,8 +29,8 @@ export function TopBar({
 }) {
   const side: CSSProperties = {
     minWidth: 60,
-    font: "500 15px var(--font-geist-sans), sans-serif",
-    color: "var(--color-ink-soft)",
+    font: "500 15px var(--font-sans), sans-serif",
+    color: "var(--ink-soft)",
   };
   return (
     <div
@@ -47,8 +47,8 @@ export function TopBar({
         style={{
           flex: 1,
           textAlign: "center",
-          font: "500 15px var(--font-geist-sans), sans-serif",
-          color: "var(--color-ink-soft)",
+          font: "500 15px var(--font-sans), sans-serif",
+          color: "var(--ink-soft)",
           letterSpacing: 0.5,
           textTransform: "lowercase",
         }}
@@ -79,17 +79,17 @@ export function Card({
       onClick={onClick}
       className={className}
       style={{
-        background: soft ? "var(--color-surface-soft)" : "var(--color-surface)",
+        background: soft ? "var(--bone)" : "var(--surface)",
         borderRadius: 20,
         padding: 16,
         border: accent
-          ? "1px dashed var(--color-accent-line)"
-          : "1px solid var(--color-ink-line)",
+          ? "1px dashed var(--moss-line)"
+          : "1px solid var(--hairline)",
         boxShadow: accent
           ? "none"
           : "0 1px 0 rgba(26,23,20,0.02), 0 1px 2px rgba(26,23,20,0.03)",
         textAlign: "left",
-        color: "var(--color-ink)",
+        color: "var(--ink)",
         ...style,
       }}
     >
@@ -111,8 +111,8 @@ export function Display({
     <h1
       style={{
         margin: 0,
-        font: `400 ${size}px/1.05 var(--font-instrument-serif), Georgia, serif`,
-        color: "var(--color-ink)",
+        font: `400 ${size}px/1.05 var(--font-serif), Georgia, serif`,
+        color: "var(--ink)",
         letterSpacing: -0.4,
         ...style,
       }}
@@ -126,8 +126,8 @@ export function Heading({ children, style }: { children?: ReactNode; style?: CSS
   return (
     <div
       style={{
-        font: "500 14px var(--font-geist-sans), sans-serif",
-        color: "var(--color-ink)",
+        font: "500 14px var(--font-sans), sans-serif",
+        color: "var(--ink)",
         letterSpacing: -0.1,
         ...style,
       }}
@@ -151,8 +151,8 @@ export function Body({
   return (
     <div
       style={{
-        font: `400 ${size}px/1.45 var(--font-geist-sans), sans-serif`,
-        color: soft ? "var(--color-ink-soft)" : "var(--color-ink)",
+        font: `400 ${size}px/1.45 var(--font-sans), sans-serif`,
+        color: soft ? "var(--ink-soft)" : "var(--ink)",
         ...style,
       }}
     >
@@ -173,8 +173,8 @@ export function Meta({
   return (
     <div
       style={{
-        font: "500 10px var(--font-jetbrains-mono), monospace",
-        color: accent ? "var(--color-accent)" : "var(--color-ink-soft)",
+        font: "500 10px var(--font-mono), monospace",
+        color: accent ? "var(--moss)" : "var(--ink-soft)",
         letterSpacing: 0.6,
         textTransform: "uppercase",
         ...style,
@@ -208,21 +208,21 @@ export function Btn({
   ...rest
 }: BtnProps) {
   const variant: CSSProperties = primary
-    ? { background: "var(--color-ink)", color: "var(--color-surface)" }
+    ? { background: "var(--ink)", color: "var(--surface)" }
     : ghost
       ? {
           background: "transparent",
-          color: "var(--color-ink-soft)",
+          color: "var(--ink-soft)",
           padding: small ? "4px 8px" : "6px 10px",
         }
       : {
           background: "transparent",
-          color: "var(--color-ink)",
-          border: "1px solid var(--color-ink-line)",
+          color: "var(--ink)",
+          border: "1px solid var(--hairline)",
         };
   const base: CSSProperties = {
     cursor: "pointer",
-    font: `500 ${small ? 14 : 16}px var(--font-geist-sans), sans-serif`,
+    font: `500 ${small ? 14 : 16}px var(--font-sans), sans-serif`,
     letterSpacing: 0.1,
     padding: small ? "7px 12px" : "11px 18px",
     borderRadius: 999,
@@ -303,12 +303,12 @@ export function Input({ value, onChange, placeholder, type = "text", autoFocus, 
       onKeyDown={onKeyDown}
       style={{
         width: "100%",
-        background: "var(--color-surface)",
-        border: "1px solid var(--color-ink-line)",
+        background: "var(--surface)",
+        border: "1px solid var(--hairline)",
         borderRadius: 12,
         padding: "10px 14px",
-        font: "400 14px var(--font-geist-sans), sans-serif",
-        color: "var(--color-ink)",
+        font: "400 14px var(--font-sans), sans-serif",
+        color: "var(--ink)",
         ...style,
       }}
     />
@@ -332,12 +332,12 @@ export function TextArea({ value, onChange, placeholder, rows = 6, style }: Text
       rows={rows}
       style={{
         width: "100%",
-        background: "var(--color-surface)",
-        border: "1px solid var(--color-ink-line)",
+        background: "var(--surface)",
+        border: "1px solid var(--hairline)",
         borderRadius: 14,
         padding: "12px 14px",
-        font: "400 14px/1.55 var(--font-geist-sans), sans-serif",
-        color: "var(--color-ink)",
+        font: "400 14px/1.55 var(--font-sans), sans-serif",
+        color: "var(--ink)",
         resize: "vertical",
         ...style,
       }}
@@ -368,10 +368,10 @@ export function Chip({
         gap: 4,
         padding: "5px 10px",
         borderRadius: 999,
-        font: "500 12px var(--font-geist-sans), sans-serif",
-        background: active ? "var(--color-ink)" : "transparent",
-        color: active ? "var(--color-surface)" : "var(--color-ink)",
-        border: active ? "1px solid var(--color-ink)" : "1px solid var(--color-ink-line)",
+        font: "500 12px var(--font-sans), sans-serif",
+        background: active ? "var(--ink)" : "transparent",
+        color: active ? "var(--surface)" : "var(--ink)",
+        border: active ? "1px solid var(--ink)" : "1px solid var(--hairline)",
         cursor: onClick ? "pointer" : undefined,
         ...style,
       }}
@@ -399,7 +399,7 @@ export function MoodDot({
         background: color,
         flexShrink: 0,
         boxShadow: ring
-          ? `0 0 0 3px var(--color-surface), 0 0 0 4px ${color}66`
+          ? `0 0 0 3px var(--surface), 0 0 0 4px ${color}66`
           : undefined,
       }}
     />
@@ -520,8 +520,8 @@ export function TabBar({ active = 0 }: { active?: 0 | 1 | 2 | 3 }) {
         paddingBottom: "calc(10px + env(safe-area-inset-bottom))",
         paddingLeft: 18,
         paddingRight: 18,
-        background: "var(--color-paper)",
-        borderTop: "1px solid var(--color-ink-line)",
+        background: "var(--paper)",
+        borderTop: "1px solid var(--hairline)",
         zIndex: 10,
       }}
     >
@@ -536,13 +536,13 @@ export function TabBar({ active = 0 }: { active?: 0 | 1 | 2 | 3 }) {
               flexDirection: "column",
               alignItems: "center",
               gap: 2,
-              color: isActive ? "var(--color-ink)" : "var(--color-ink-soft)",
+              color: isActive ? "var(--ink)" : "var(--ink-soft)",
               textDecoration: "none",
             }}
           >
             <div
               style={{
-                font: "20px var(--font-geist-sans), sans-serif",
+                font: "20px var(--font-sans), sans-serif",
                 opacity: isActive ? 1 : 0.6,
               }}
             >
@@ -550,7 +550,7 @@ export function TabBar({ active = 0 }: { active?: 0 | 1 | 2 | 3 }) {
             </div>
             <div
               style={{
-                font: "500 12px var(--font-geist-sans), sans-serif",
+                font: "500 12px var(--font-sans), sans-serif",
                 letterSpacing: 0.3,
               }}
             >

@@ -21,6 +21,8 @@
   --moss:         #5E7148;          /* PRIMARY — links, focus, ring heart */
   --moss-deep:    #455634;
   --moss-tint:    #DDE3CF;
+  --moss-soft:    rgba(94, 113, 72, 0.10);
+  --moss-line:    rgba(94, 113, 72, 0.35);
   --bark:         #3F3B2E;          /* cedar sprig stem, deep frame */
   --clay:         #B96A52;          /* warm secondary, rare emphasis */
   --clay-soft:    rgba(185, 106, 82, 0.10);
@@ -36,7 +38,10 @@
   --q-low-bg:     rgba(110, 129, 151, 0.10);
   --q-sharp-bg:   rgba(201, 122, 110, 0.10);
 
-  /* ---------- Type ---------- */
+  /* ---------- Type ----------
+     The --font-geist-sans / --font-lora / --font-jetbrains-mono custom
+     properties are injected by next/font in app/layout.tsx; the aliases
+     below are the public names the rest of the app uses. */
   --font-serif:   var(--font-lora), 'Iowan Old Style', Georgia, serif;
   --font-sans:    var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   --font-mono:    var(--font-jetbrains-mono), ui-monospace, monospace;
@@ -77,68 +82,23 @@
   --dur-fast: 140ms;
   --dur-base: 240ms;
   --dur-slow: 480ms;
-
-  /* =============================================================
-     Legacy aliases — existing components reference these names.
-     Will be removed in the per-page sweep (step 6).
-     ============================================================= */
-  --color-paper:        var(--paper);
-  --color-surface:      var(--surface);
-  --color-surface-soft: var(--bone);
-  --color-ink:          var(--ink);
-  --color-ink-soft:     var(--ink-soft);
-  --color-ink-line:     var(--hairline);
-
-  /* Primary accent moves from clay → moss. Old --color-accent tokens
-     now resolve to moss; clay remains available via --clay if a UI
-     spot genuinely wants the warm secondary. */
-  --color-accent:       var(--moss);
-  --color-accent-soft:  rgba(94, 113, 72, 0.10);
-  --color-accent-line:  rgba(94, 113, 72, 0.35);
-
-  --color-mood-red:     var(--q-sharp);
-  --color-mood-yellow:  var(--q-bright);
-  --color-mood-blue:    var(--q-low);
-  --color-mood-green:   var(--q-calm);
-  --color-mood-red-bg:    var(--q-sharp-bg);
-  --color-mood-yellow-bg: var(--q-bright-bg);
-  --color-mood-blue-bg:   var(--q-low-bg);
-  --color-mood-green-bg:  var(--q-calm-bg);
-
-  --shadow-card: var(--shadow-sm);
-  --radius-card: var(--r-lg);
-
-  /* Old font alias — keeps existing `var(--font-instrument-serif)`
-     usages pointing at Lora until the sweep. */
-  --font-instrument-serif: var(--font-serif);
 }
 
 @theme inline {
-  --color-paper: var(--color-paper);
-  --color-surface: var(--color-surface);
-  --color-surface-soft: var(--color-surface-soft);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
   --color-bone: var(--bone);
-  --color-ink: var(--color-ink);
-  --color-ink-soft: var(--color-ink-soft);
-  --color-ink-line: var(--color-ink-line);
+  --color-hairline: var(--hairline);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
   --color-moss: var(--moss);
   --color-bark: var(--bark);
   --color-clay: var(--clay);
-  --color-accent: var(--color-accent);
-  --color-accent-soft: var(--color-accent-soft);
-  --color-accent-line: var(--color-accent-line);
-  --color-mood-red: var(--color-mood-red);
-  --color-mood-yellow: var(--color-mood-yellow);
-  --color-mood-blue: var(--color-mood-blue);
-  --color-mood-green: var(--color-mood-green);
 
   --font-serif: var(--font-serif);
   --font-display: var(--font-serif);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
-
-  --shadow-card: var(--shadow-card);
-  --radius-card: var(--radius-card);
 }
 
 /* =============================================================
@@ -160,8 +120,9 @@
   --bark:      #C9BFA6;
   --clay:      #C68B6E;
 
-  --color-accent-soft: rgba(143, 168, 110, 0.16);
-  --color-accent-line: rgba(143, 168, 110, 0.40);
+  --moss-soft: rgba(143, 168, 110, 0.16);
+  --moss-line: rgba(143, 168, 110, 0.40);
+  --moss-tint: rgba(143, 168, 110, 0.18);
 }
 
 html, body {

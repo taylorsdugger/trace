@@ -11,6 +11,7 @@ type Entry = {
   body_md: string;
   created_at: string;
   kind: string;
+  quadrant?: "red" | "yellow" | "blue" | "green" | null;
 };
 
 async function loadEntries(): Promise<Entry[]> {
@@ -20,7 +21,19 @@ async function loadEntries(): Promise<Entry[]> {
     .select("id,title,body_md,created_at,kind")
     .order("created_at", { ascending: false })
     .limit(100);
-  return data ?? [];
+  const entries = (data ?? []) as Entry[];
+  if (entries.length === 0) return entries;
+  const ids = entries.map((e) => e.id);
+  const { data: scores } = await sb
+    .from("mood_scores")
+    .select("entry_id,quadrant")
+    .in("entry_id", ids);
+  const byId = new Map<string, "red" | "yellow" | "blue" | "green">();
+  for (const s of scores ?? []) {
+    if (s.entry_id && !byId.has(s.entry_id) && s.quadrant) byId.set(s.entry_id, s.quadrant);
+  }
+  for (const e of entries) e.quadrant = byId.get(e.id) ?? null;
+  return entries;
 }
 
 export default async function TrailPage() {

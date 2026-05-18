@@ -22,8 +22,8 @@ export function SideNav() {
         flexDirection: "column",
         gap: 8,
         padding: "20px 16px",
-        borderRight: "1px solid var(--color-ink-line)",
-        background: "var(--color-paper)",
+        borderRight: "1px solid var(--hairline)",
+        background: "var(--paper)",
       }}
     >
       <div style={{ padding: "8px 8px 20px" }}>
@@ -41,13 +41,13 @@ export function SideNav() {
             gap: 12,
             padding: "10px 12px",
             borderRadius: 12,
-            color: "var(--color-ink)",
+            color: "var(--ink)",
             textDecoration: "none",
-            font: "500 14px var(--font-geist-sans), sans-serif",
+            font: "500 14px var(--font-sans), sans-serif",
             letterSpacing: 0.2,
           }}
         >
-          <span style={{ font: "18px var(--font-geist-sans), sans-serif", color: "var(--color-ink-soft)" }}>
+          <span style={{ font: "18px var(--font-sans), sans-serif", color: "var(--ink-soft)" }}>
             {t.icon}
           </span>
           <span>{t.label}</span>

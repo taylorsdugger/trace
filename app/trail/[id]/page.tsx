@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Editor } from "@/components/Editor";
+import { TraceReader } from "@/components/TraceReader";
 import { supabase } from "@/lib/supabase";
 import { Screen, TopBar } from "@/components/ui";
 
@@ -36,12 +36,11 @@ export default async function EntryPage({ params }: { params: Promise<{ id: stri
         }
         title="a trace"
       />
-      <Editor
+      <TraceReader
         entry={{
           id: data.id,
           title: data.title,
           body_md: data.body_md,
-          mood: data.mood,
           kind: (data.kind as "journal" | "thought_record" | "check_in") ?? "journal",
           tags: data.tags ?? [],
           createdAt: data.created_at,

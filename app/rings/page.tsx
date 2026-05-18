@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { Screen, TopBar, Card, Display, Body, Meta, Btn, TabBar } from "@/components/ui";
+import { Screen, TopBar, Card, Display, Body, Meta, TabBar } from "@/components/ui";
 import { dayKey } from "@/lib/dates";
+import { WalkNowForm } from "./WalkNowForm";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +80,11 @@ export default async function RingsPage() {
       <TopBar
         left={<Link href="/" style={{ color: "inherit", textDecoration: "none" }}>← back</Link>}
         title="rings"
-        right="↗"
+        right={
+          <Link href="/rings/all" style={{ color: "inherit", textDecoration: "none" }}>
+            all ↗
+          </Link>
+        }
       />
 
       <div>
@@ -119,15 +124,15 @@ export default async function RingsPage() {
                 style={{
                   width: 16,
                   height: d.has ? 36 : 6,
-                  background: d.has ? "var(--color-accent)" : "var(--color-surface-soft)",
-                  border: d.has ? "none" : "1px solid var(--color-ink-line)",
+                  background: d.has ? "var(--moss)" : "var(--bone)",
+                  border: d.has ? "none" : "1px solid var(--hairline)",
                   borderRadius: 6,
                 }}
               />
               <div
                 style={{
-                  font: "500 10px var(--font-jetbrains-mono), monospace",
-                  color: "var(--color-ink-soft)",
+                  font: "500 10px var(--font-mono), monospace",
+                  color: "var(--ink-soft)",
                 }}
               >
                 {d.label}
@@ -142,6 +147,11 @@ export default async function RingsPage() {
         <Body size={14} style={{ marginTop: 6, lineHeight: 1.45 }}>
           {commonThread}
         </Body>
+      </Card>
+
+      <Card>
+        <Meta>ask cedar to listen</Meta>
+        <WalkNowForm />
       </Card>
 
       <Card accent>

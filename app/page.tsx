@@ -134,8 +134,8 @@ export default async function HomePage() {
                 <MoodDot color={d.color} size={28} ring={"ring" in d ? d.ring : false} />
                 <div
                   style={{
-                    font: "11px var(--font-geist-sans), sans-serif",
-                    color: "var(--color-ink-soft)",
+                    font: "11px var(--font-sans), sans-serif",
+                    color: "var(--ink-soft)",
                   }}
                 >
                   {d.label}
