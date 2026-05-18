@@ -41,6 +41,7 @@ function readSession<T>(key: string): T | null {
 type Mode = "quick" | "detailed";
 
 type StoredMood = {
+  id: number;
   emotion: string;
   valence: number;
   energy: number;
@@ -319,7 +320,7 @@ export function NewEntry() {
       body: {
         title: mode === "quick" ? `Daily note ${today}` : `Thought record ${today}`,
         body_md,
-        mood: mood.valence,
+        mood: mood.id,
         kind,
         tags,
         check_in: {

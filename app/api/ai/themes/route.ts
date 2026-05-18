@@ -41,7 +41,7 @@ async function run() {
   }
 
   const corpus = entries
-    .map((e) => `### ${new Date(e.created_at).toLocaleDateString()} — ${e.title ?? "(untitled)"} [mood ${e.mood ?? "?"}/10, kind ${e.kind}]\n${e.body_md}`)
+    .map((e) => `### ${new Date(e.created_at).toLocaleDateString()} — ${e.title ?? "(untitled)"} [${e.kind}]\n${e.body_md}`)
     .join("\n\n---\n\n");
 
   const summary = await chat(

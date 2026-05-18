@@ -4,6 +4,7 @@ export type Quadrant = "yellow" | "green" | "blue" | "red";
 // (0,0) = top-left, (1,1) = bottom-right. Left = unpleasant, right = pleasant.
 // Top = high energy, bottom = low energy. Quadrant is determined by position.
 export type Emotion = {
+  id: number;
   word: string;
   x: number;
   y: number;
@@ -11,12 +12,14 @@ export type Emotion = {
   definition?: string;
 };
 
-// valence and energy are 0..10 scales derived from position, for storage/analytics.
+// valence and energy are 0..10 integer scales derived from position, for
+// storage/analytics. They get persisted to int columns in mood_scores, so
+// round to a whole number rather than returning a float.
 export function valenceOf(e: { x: number }): number {
-  return Math.round(e.x * 100) / 10;
+  return Math.round(e.x * 10);
 }
 export function energyOf(e: { y: number }): number {
-  return Math.round((1 - e.y) * 100) / 10;
+  return Math.round((1 - e.y) * 10);
 }
 
 // 36 emotions per quadrant on a 6×6 sub-grid. Most intense feeling sits at the
@@ -24,7 +27,10 @@ export function energyOf(e: { y: number }): number {
 const C = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((c) => c / 11);
 const R = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((r) => r / 11);
 
-export const EMOTIONS: Emotion[] = [
+// Stable integer ids are assigned by index (1..N) so they can be stored as INT
+// in the `entries.mood` / `check_ins.mood` columns. NEVER renumber or reorder
+// existing emotions — only append new ones at the end with new ids.
+const RAW_EMOTIONS: Omit<Emotion, "id">[] = [
   // red — high energy, unpleasant (top-left). Corner = (col 0, row 0) = enraged.
   { word: "enraged",      x: C[0], y: R[0], quadrant: "red", definition: "anger so hot it takes over completely" },
   { word: "furious",      x: C[1], y: R[0], quadrant: "red", definition: "shaking with intense, focused anger" },
@@ -177,6 +183,16 @@ export const EMOTIONS: Emotion[] = [
   { word: "tranquil",     x: C[10], y: R[11], quadrant: "green", definition: "deeply still, like a pond with no wind" },
   { word: "serene",       x: C[11], y: R[11], quadrant: "green", definition: "wide, clear stillness, all the way through" },
 ];
+
+export const EMOTIONS: Emotion[] = RAW_EMOTIONS.map((e, i) => ({ id: i + 1, ...e }));
+
+export const EMOTION_BY_ID: Record<number, Emotion> = Object.fromEntries(
+  EMOTIONS.map((e) => [e.id, e])
+);
+
+export const EMOTION_BY_WORD: Record<string, Emotion> = Object.fromEntries(
+  EMOTIONS.map((e) => [e.word, e])
+);
 
 const GRID_COLS = 12;
 const GRID_ROWS = 12;

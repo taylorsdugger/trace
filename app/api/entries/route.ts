@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     const { data: ciRow, error: ciErr } = await sb
       .from("check_ins")
       .insert({
-        mood: ci.valence ?? null,
+        mood: body.mood ?? null,
         prompt: ci.seed ?? null,
         transcript: ci.transcript ?? [],
         entry_id: data.id,

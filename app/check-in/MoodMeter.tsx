@@ -215,6 +215,7 @@ export function MoodMeter() {
       sessionStorage.setItem(
         "trace.mood",
         JSON.stringify({
+          id: selected.id,
           emotion: selected.word,
           valence: valenceOf(selected),
           energy: energyOf(selected),
