@@ -13,7 +13,7 @@ import {
 } from "@/lib/emotions";
 import { Screen, TopBar, Body, Meta } from "@/components/ui";
 
-const BUBBLE_SIZE = 80;
+const BUBBLE_SIZE = 108;
 const GRID_PX_WIDTH = BUBBLE_SIZE * EMOTION_GRID.cols;
 const GRID_PX_HEIGHT = BUBBLE_SIZE * EMOTION_GRID.rows;
 
@@ -288,7 +288,7 @@ export function MoodMeter() {
             border: "1px solid var(--color-ink-line)",
             background: "var(--color-paper)",
             boxShadow: "inset 0 0 0 1px rgba(26,23,20,0.02)",
-            padding: 6,
+            padding: 128,
           }}
         >
           <div
