@@ -127,14 +127,35 @@ export function MoodMeter() {
   const targetRef = useRef<{ x: number; y: number } | null>(null);
   const rafRef = useRef<number | null>(null);
   const focusRafRef = useRef<number | null>(null);
+  const [gutter, setGutter] = useState({ x: 128, y: 128 });
 
-  // Center the grid on (0.5, 0.5) on mount so the user starts at the origin.
+  // Size the scrollable gutters so any bubble — including the top/bottom
+  // rows and far columns — can be dragged to the viewport center. Measured
+  // per-axis because the viewport isn't always square. Re-measure on resize.
+  useLayoutEffect(() => {
+    const v = viewportRef.current;
+    if (!v) return;
+    function measure() {
+      const node = viewportRef.current;
+      if (!node) return;
+      const nx = Math.max(16, Math.ceil(node.clientWidth / 2 - BUBBLE_SIZE / 2));
+      const ny = Math.max(16, Math.ceil(node.clientHeight / 2 - BUBBLE_SIZE / 2));
+      setGutter((prev) => (prev.x === nx && prev.y === ny ? prev : { x: nx, y: ny }));
+    }
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(v);
+    return () => ro.disconnect();
+  }, []);
+
+  // Center the grid on (0.5, 0.5) whenever the gutter changes so we always
+  // start at the origin and stay centered after a resize.
   useLayoutEffect(() => {
     const v = viewportRef.current;
     if (!v) return;
     v.scrollLeft = (v.scrollWidth - v.clientWidth) / 2;
     v.scrollTop = (v.scrollHeight - v.clientHeight) / 2;
-  }, []);
+  }, [gutter]);
 
   // Highlight the emotion closest to the viewport center while panning/scrolling.
   useEffect(() => {
@@ -351,16 +372,20 @@ export function MoodMeter() {
             border: "1px solid var(--color-ink-line)",
             background: "var(--color-paper)",
             boxShadow: "inset 0 0 0 1px rgba(26,23,20,0.02)",
-            padding: 128,
+            padding: `${gutter.y}px ${gutter.x}px`,
           }}
         >
           <div
             ref={gridRef}
-            onMouseOver={(e) => {
+            onPointerOver={(e) => {
+              if (e.pointerType !== "mouse") return;
               const t = (e.target as HTMLElement).closest<HTMLButtonElement>("button[data-word]");
               if (t) setHoveredWord(t.dataset.word ?? null);
             }}
-            onMouseLeave={() => setHoveredWord(null)}
+            onPointerLeave={(e) => {
+              if (e.pointerType !== "mouse") return;
+              setHoveredWord(null);
+            }}
             style={{
               display: "grid",
               gridTemplateColumns: `repeat(${EMOTION_GRID.cols}, ${BUBBLE_SIZE}px)`,
