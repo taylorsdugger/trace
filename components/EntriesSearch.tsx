@@ -39,17 +39,17 @@ export function EntriesSearch({ fallback }: { fallback: Entry[] }) {
 
   return (
     <>
-      <Input value={q} onChange={setQ} placeholder="Search by meaning or keyword…" />
-      {pending && <Meta>searching…</Meta>}
+      <Input value={q} onChange={setQ} placeholder="follow the trail…" />
+      {pending && <Meta>walking back…</Meta>}
       {results.length === 0 && (
         <Card>
           <Body soft size={13}>
-            No entries.
+            no traces yet. the trail starts here.
           </Body>
         </Card>
       )}
       {results.map((e) => (
-        <Link key={e.id} href={`/entries/${e.id}`} style={{ textDecoration: "none" }}>
+        <Link key={e.id} href={`/trail/${e.id}`} style={{ textDecoration: "none" }}>
           <Card>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
               <Body size={14} style={{ fontWeight: 500 }}>

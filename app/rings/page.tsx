@@ -24,7 +24,7 @@ function stripMd(s: string): string {
     .trim();
 }
 
-async function loadReflection() {
+async function loadRings() {
   const sb = supabase();
   const since = new Date(Date.now() - 7 * 86400 * 1000).toISOString();
   const [themesRes, entriesRes] = await Promise.all([
@@ -51,11 +51,11 @@ async function loadReflection() {
   return { theme: themesRes.data?.[0] ?? null, days, entryCount };
 }
 
-export default async function ReflectionPage() {
-  let data: Awaited<ReturnType<typeof loadReflection>> | null = null;
+export default async function RingsPage() {
+  let data: Awaited<ReturnType<typeof loadRings>> | null = null;
   let error: string | null = null;
   try {
-    data = await loadReflection();
+    data = await loadRings();
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
   }
@@ -68,22 +68,22 @@ export default async function ReflectionPage() {
     : null;
   const headline = cleanedLines
     ? cleanedLines.slice(0, 3).join("\n")
-    : "Trace will surface a pattern here\nonce you've journaled for\na few days.";
+    : "nothing has come back yet.\nleave a few traces\nand cedar will listen.";
   const commonThread =
     cleanedLines?.slice(3).join(" ").trim() ||
-    "Common threads will appear once a weekly summary has been generated.";
+    "common threads surface after a week of traces.";
   const days = data?.days ?? Array(7).fill({ label: "·", has: false });
 
   return (
     <Screen>
       <TopBar
         left={<Link href="/" style={{ color: "inherit", textDecoration: "none" }}>← back</Link>}
-        title="reflection"
+        title="rings"
         right="↗"
       />
 
       <div>
-        <Meta accent>✦ A PATTERN</Meta>
+        <Meta accent>what keeps coming back</Meta>
         <Display size={32} style={{ marginTop: 6, lineHeight: 1.1, whiteSpace: "pre-line" }}>
           {headline}
         </Display>
@@ -98,8 +98,8 @@ export default async function ReflectionPage() {
       {/* week timeline */}
       <Card>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-          <Meta>LAST 7 DAYS</Meta>
-          <Meta>{data?.entryCount ?? 0} ENTRIES</Meta>
+          <Meta>last 7 days</Meta>
+          <Meta>{data?.entryCount ?? 0} traces</Meta>
         </div>
         <div
           style={{
@@ -138,27 +138,20 @@ export default async function ReflectionPage() {
       </Card>
 
       <Card>
-        <Meta>COMMON THREAD</Meta>
+        <Meta>common thread</Meta>
         <Body size={14} style={{ marginTop: 6, lineHeight: 1.45 }}>
           {commonThread}
         </Body>
       </Card>
 
       <Card accent>
-        <Meta accent>✦ A SMALL EXPERIMENT</Meta>
+        <Meta accent>a question from cedar</Meta>
         <Body size={13} style={{ marginTop: 6, lineHeight: 1.45 }}>
           {data?.theme?.top_distortions?.length
-            ? `Next time you notice ${data.theme.top_distortions[0]}, pause for 30 seconds and name what you're actually observing.`
-            : "Pick one small experiment for the week — Trace will weigh in once it has more entries to read."}
+            ? `when ${data.theme.top_distortions[0]} shows up next, what's underneath it?`
+            : "no question yet. cedar listens until there's a thread to pull."}
         </Body>
       </Card>
-
-      <div style={{ display: "flex", gap: 8 }}>
-        <Btn style={{ flex: 1 }}>Not really</Btn>
-        <Btn primary style={{ flex: 1 }}>
-          Try this
-        </Btn>
-      </div>
 
       <TabBar active={2} />
     </Screen>

@@ -3,9 +3,9 @@ import { TraceLogo } from "@/components/ui";
 
 const TABS = [
   { id: "today", icon: "◐", label: "today", href: "/" },
-  { id: "write", icon: "✎", label: "write", href: "/entries/new" },
-  { id: "patterns", icon: "◇", label: "patterns", href: "/reflection" },
-  { id: "you", icon: "○", label: "you", href: "/entries" },
+  { id: "write", icon: "✎", label: "a trace", href: "/trail/new" },
+  { id: "rings", icon: "◇", label: "rings", href: "/rings" },
+  { id: "trail", icon: "○", label: "trail", href: "/trail" },
 ] as const;
 
 export function SideNav() {
@@ -28,7 +28,7 @@ export function SideNav() {
     >
       <div style={{ padding: "8px 8px 20px" }}>
         <Link href="/" style={{ textDecoration: "none", color: "inherit" }}>
-          <TraceLogo size={26} />
+          <TraceLogo size={28} />
         </Link>
       </div>
       {TABS.map((t) => (

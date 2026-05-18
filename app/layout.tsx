@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { Geist, Lora, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SideNav } from "@/components/SideNav";
 import { TzCookie } from "@/components/TzCookie";
@@ -7,13 +7,14 @@ import { TzCookie } from "@/components/TzCookie";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
+const lora = Lora({
+  variable: "--font-lora",
   subsets: ["latin"],
-  weight: "400",
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -23,13 +24,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Trace",
-  description: "Trace: CBT Journal with Memory",
+  title: "Trace — Cedar walks with you",
+  description: "Trace your thoughts back to the root. Cedar walks with you.",
   manifest: "/manifest.json",
 };
 
 export const viewport = {
-  themeColor: "#F7F2E8",
+  themeColor: "#F4F1E4",
 };
 
 export default function RootLayout({
@@ -40,7 +41,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${lora.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col md:flex-row">
         <TzCookie />

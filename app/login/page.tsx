@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Screen, Card, Display, Body, Btn, Input, TraceLogo } from "@/components/ui";
+import { Screen, Card, Display, Body, Btn, Input, TreeRing } from "@/components/ui";
 
 function LoginForm() {
   const router = useRouter();
@@ -23,7 +23,7 @@ function LoginForm() {
     });
     setPending(false);
     if (!res.ok) {
-      setError("Incorrect password.");
+      setError("that didn't open the door.");
       return;
     }
     router.replace(next);
@@ -32,14 +32,11 @@ function LoginForm() {
 
   return (
     <Screen style={{ justifyContent: "center", gap: 20 }}>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-        <TraceLogo size={42} />
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+        <TreeRing size={56} />
         <Display size={32} style={{ marginTop: 4 }}>
-          Welcome back.
+          welcome back to the grove.
         </Display>
-        <Body soft size={14}>
-          CBT journal with memory.
-        </Body>
       </div>
       <Card style={{ padding: 18 }}>
         <form onSubmit={submit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -47,16 +44,16 @@ function LoginForm() {
             type="password"
             value={password}
             onChange={setPassword}
-            placeholder="Password"
+            placeholder="password"
             autoFocus
           />
           {error && (
-            <Body size={13} style={{ color: "var(--color-accent)" }}>
+            <Body size={13} style={{ color: "var(--clay)" }}>
               {error}
             </Body>
           )}
           <Btn primary type="submit" disabled={pending}>
-            {pending ? "Signing in…" : "Sign in"}
+            {pending ? "opening…" : "enter"}
           </Btn>
         </form>
       </Card>

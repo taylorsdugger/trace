@@ -61,25 +61,25 @@ export function Editor({ entry }: { entry: EditorEntry }) {
       kind: entry.kind,
       tags: [...regular, ...trapTags],
     };
-    const url = entry.id ? `/api/entries/${entry.id}` : "/api/entries";
+    const url = entry.id ? `/api/traces/${entry.id}` : "/api/traces";
     const res = await fetchJson<{ id: string }>(url, { method: entry.id ? "PUT" : "POST", body: payload });
     if (!res.ok || !res.data) {
       setSaveError(res.text || "save failed");
       return;
     }
     startTransition(() => {
-      router.push(`/entries/${res.data!.id}`);
+      router.push(`/trail/${res.data!.id}`);
       router.refresh();
     });
   }
 
   async function remove() {
     if (!entry.id) return;
-    if (!confirm("Delete this entry?")) return;
-    const res = await fetchJson(`/api/entries/${entry.id}`, { method: "DELETE" });
+    if (!confirm("let this trace rest?")) return;
+    const res = await fetchJson(`/api/traces/${entry.id}`, { method: "DELETE" });
     if (res.ok) {
       startTransition(() => {
-        router.push("/entries");
+        router.push("/trail");
         router.refresh();
       });
     }

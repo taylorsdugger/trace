@@ -5,7 +5,6 @@ import { Screen, TopBar, Card, Display, Heading, Body, Meta, MoodDot, TabBar, Tr
 import { QUADRANT_COLORS } from "@/lib/emotions";
 import { dayKey, TZ_COOKIE } from "@/lib/dates";
 import { MemoryCard } from "@/components/MemoryCard";
-import { StreakCard } from "@/components/StreakCard";
 
 export const dynamic = "force-dynamic";
 
@@ -68,11 +67,11 @@ function hourInTz(date: Date, tz: string | undefined): number {
 }
 
 function greeting(hour: number): string {
-  if (hour < 5) return "Still up.";
-  if (hour < 12) return "Good morning.";
-  if (hour < 17) return "Good afternoon.";
-  if (hour < 21) return "Good evening.";
-  return "Late night.";
+  if (hour < 5) return "still up.";
+  if (hour < 12) return "good morning.";
+  if (hour < 17) return "good afternoon.";
+  if (hour < 21) return "the light is going.";
+  return "late.";
 }
 
 export default async function HomePage() {
@@ -112,20 +111,12 @@ export default async function HomePage() {
         </Card>
       )}
 
-      {/* streak card */}
-      <StreakCard
-        streak={data?.streak ?? 0}
-        thisMonth={data?.thisMonth ?? 0}
-        dayCounts={data?.dayCounts ?? {}}
-        tz={tz}
-      />
-
       {/* mood pulse */}
       <Link href="/check-in" style={{ textDecoration: "none" }}>
         <Card>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <Heading>How&apos;s the morning?</Heading>
-            <Meta>quick log →</Meta>
+            <Heading>where are you right now?</Heading>
+            <Meta>check in →</Meta>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 14 }}>
             {(
@@ -161,21 +152,21 @@ export default async function HomePage() {
       {/* quick actions */}
       <div style={{ display: "flex", gap: 10 }}>
         <Link
-          href="/entries/new?mode=quick"
+          href="/trail/new?mode=quick"
           style={{ flex: 1, textDecoration: "none" }}
         >
           <Card style={{ padding: 14, textAlign: "center" }}>
             <Meta>30 SEC</Meta>
-            <Heading style={{ marginTop: 4 }}>+ daily note</Heading>
+            <Heading style={{ marginTop: 4 }}>a quick trace</Heading>
           </Card>
         </Link>
         <Link
-          href="/entries/new?mode=detailed"
+          href="/trail/new?mode=detailed"
           style={{ flex: 1, textDecoration: "none" }}
         >
           <Card style={{ padding: 14, textAlign: "center" }}>
             <Meta>3 MIN</Meta>
-            <Heading style={{ marginTop: 4 }}>+ deep entry</Heading>
+            <Heading style={{ marginTop: 4 }}>sit with this one</Heading>
           </Card>
         </Link>
       </div>

@@ -116,7 +116,7 @@ function AxisLabel({
 export function MoodMeter() {
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") ?? "/entries/new?mode=quick";
+  const next = params.get("next") ?? "/trail/new?mode=quick";
   const [selected, setSelected] = useState<Emotion | null>(null);
   const [focusedWord, setFocusedWord] = useState<string | null>(null);
   const [hoveredWord, setHoveredWord] = useState<string | null>(null);

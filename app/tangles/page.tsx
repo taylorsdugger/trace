@@ -1,12 +1,12 @@
 import { Suspense } from "react";
-import { TrapsPicker } from "./TrapsPicker";
+import { TanglesPicker } from "./TanglesPicker";
 
 export const dynamic = "force-dynamic";
 
-export default function TrapsPage() {
+export default function TanglesPage() {
   return (
     <Suspense fallback={null}>
-      <TrapsPicker />
+      <TanglesPicker />
     </Suspense>
   );
 }

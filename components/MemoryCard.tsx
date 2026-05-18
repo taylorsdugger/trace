@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Card, Meta, Body, IconBtn } from "@/components/ui";
+import { Card, Meta, Body, IconBtn, CedarSprig } from "@/components/ui";
 import { formatShortDate } from "@/lib/dates";
 import { fetchJson } from "@/lib/fetch";
 
@@ -29,7 +29,7 @@ export function MemoryCard({ theme }: { theme: Theme }) {
     setError(null);
     setWorking(true);
     const r = await fetchJson<{ ok: boolean; skipped?: string; error?: string }>(
-      "/api/ai/themes",
+      "/api/ai/rings",
       { method: "POST" },
     );
     setWorking(false);
@@ -48,23 +48,26 @@ export function MemoryCard({ theme }: { theme: Theme }) {
     <Card accent>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <Meta accent>
-          ✦ FROM MEMORY
+          a note from cedar
           {theme?.period_end ? ` · ${formatShortDate(theme.period_end)}` : ""}
         </Meta>
         <IconBtn onClick={regenerate} disabled={busy}>
-          <Meta accent>{busy ? "THINKING…" : "↻ REGENERATE"}</Meta>
+          <Meta accent>{busy ? "listening…" : "↻ again"}</Meta>
         </IconBtn>
       </div>
-      <Body size={14} style={{ marginTop: 6, lineHeight: 1.45 }}>
-        {firstLine ?? "Your reflections will surface here once you've journaled a few days."}
-      </Body>
+      <div style={{ display: "flex", gap: 10, marginTop: 8, alignItems: "flex-start" }}>
+        <CedarSprig size={26} style={{ marginTop: 2 }} />
+        <Body size={15} style={{ lineHeight: 1.5, fontFamily: "var(--font-serif)" }}>
+          {firstLine ?? "nothing to say yet. cedar listens until there's a thread to pull."}
+        </Body>
+      </div>
       {firstLine && (
         <div style={{ marginTop: 10 }}>
           <Link
-            href="/themes"
-            style={{ textDecoration: "none", color: "var(--color-accent)" }}
+            href="/rings/all"
+            style={{ textDecoration: "none", color: "var(--moss)" }}
           >
-            <Meta accent>see more →</Meta>
+            <Meta accent>follow this back →</Meta>
           </Link>
         </div>
       )}

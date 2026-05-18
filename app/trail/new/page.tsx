@@ -1,12 +1,12 @@
 import { Suspense } from "react";
-import { NewEntry } from "./NewEntry";
+import { NewTrace } from "./NewTrace";
 
 export const dynamic = "force-dynamic";
 
-export default function NewEntryPage() {
+export default function NewTracePage() {
   return (
     <Suspense fallback={null}>
-      <NewEntry />
+      <NewTrace />
     </Suspense>
   );
 }

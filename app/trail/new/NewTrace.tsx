@@ -77,7 +77,7 @@ function detectTrap(text: string): string | null {
   return null;
 }
 
-export function NewEntry() {
+export function NewTrace() {
   const router = useRouter();
   const params = useSearchParams();
   const initialMode = (params.get("mode") as Mode) || "quick";
@@ -118,7 +118,7 @@ export function NewEntry() {
   const [evidenceAgainst, setEvidenceAgainst] = useState("");
   const [reframe, setReframe] = useState("");
 
-  // Traps the user picked on /traps (slugs)
+  // Traps the user picked on /tangles (slugs)
   const [selectedTraps, setSelectedTraps] = useState<string[]>([]);
 
   const [saving, setSaving] = useState(false);
@@ -146,12 +146,12 @@ export function NewEntry() {
     }
     const m = readSession<StoredMood>("trace.mood");
     if (m) setMood(m);
-    // trace.traps is the handoff from the picker — apply it and clear so subsequent
+    // trace.tangles is the handoff from the picker — apply it and clear so subsequent
     // mounts don't re-overwrite state with a stale handoff.
-    const t = readSession<string[]>("trace.traps");
+    const t = readSession<string[]>("trace.tangles");
     if (t && Array.isArray(t)) {
       setSelectedTraps(t);
-      sessionStorage.removeItem("trace.traps");
+      sessionStorage.removeItem("trace.tangles");
     }
     try {
       const raw = localStorage.getItem(CUSTOM_TAGS_KEY);
@@ -243,11 +243,11 @@ export function NewEntry() {
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("trace.mood");
     }
-    router.push(`/check-in?next=${encodeURIComponent(`/entries/new?mode=${mode}`)}`);
+    router.push(`/check-in?next=${encodeURIComponent(`/trail/new?mode=${mode}`)}`);
   }
 
   function pickTraps() {
-    router.push(`/traps?next=${encodeURIComponent(`/entries/new?mode=${mode}`)}`);
+    router.push(`/tangles?next=${encodeURIComponent(`/trail/new?mode=${mode}`)}`);
   }
 
   function toggleTrap(slug: string) {
@@ -316,7 +316,7 @@ export function NewEntry() {
     const trapNames = selectedTrapObjs.map((t) => t.name);
 
     const today = new Date().toLocaleDateString();
-    const res = await fetchJson<{ id: string }>("/api/entries", {
+    const res = await fetchJson<{ id: string }>("/api/traces", {
       body: {
         title: mode === "quick" ? `Daily note ${today}` : `Thought record ${today}`,
         body_md,
@@ -352,9 +352,9 @@ export function NewEntry() {
       return;
     }
     sessionStorage.removeItem("trace.mood");
-    sessionStorage.removeItem("trace.traps");
+    sessionStorage.removeItem("trace.tangles");
     sessionStorage.removeItem(DRAFT_KEY);
-    router.push(`/entries/${res.data.id}`);
+    router.push(`/trail/${res.data.id}`);
   }
 
   const moodColor = mood ? QUADRANT_COLORS[mood.quadrant] : "var(--color-ink-line)";
@@ -474,7 +474,7 @@ export function NewEntry() {
         </Card>
       </div>
 
-      {/* selected traps (carried back from /traps) */}
+      {/* selected traps (carried back from /tangles) */}
       {selectedTrapObjs.length > 0 && (
         <Card>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
@@ -648,7 +648,7 @@ export function NewEntry() {
               <Body size={13} style={{ marginTop: 6, lineHeight: 1.45 }}>
                 This reads like{" "}
                 <Link
-                  href={`/traps?trap=${encodeURIComponent(detectedTrap)}&next=${encodeURIComponent(`/entries/new?mode=${mode}`)}`}
+                  href={`/tangles?trap=${encodeURIComponent(detectedTrap)}&next=${encodeURIComponent(`/trail/new?mode=${mode}`)}`}
                   style={{
                     borderBottom: "1px dashed var(--color-accent)",
                     color: "var(--color-accent)",

@@ -23,7 +23,7 @@ async function loadEntries(): Promise<Entry[]> {
   return data ?? [];
 }
 
-export default async function EntriesPage() {
+export default async function TrailPage() {
   let entries: Entry[] = [];
   let error: string | null = null;
   try {
@@ -40,12 +40,12 @@ export default async function EntriesPage() {
             ←
           </Link>
         }
-        title="entries"
+        title="trail"
       />
       <div>
-        <Meta>YOUR ARCHIVE</Meta>
+        <Meta>follow the trail</Meta>
         <Display size={32} style={{ marginTop: 4 }}>
-          Everything you&apos;ve traced.
+          the trail behind you.
         </Display>
       </div>
 

@@ -30,11 +30,11 @@ export default async function EntryPage({ params }: { params: Promise<{ id: stri
     <Screen scroll>
       <TopBar
         left={
-          <Link href="/entries" style={{ color: "inherit", textDecoration: "none" }}>
+          <Link href="/trail" style={{ color: "inherit", textDecoration: "none" }}>
             ←
           </Link>
         }
-        title="entry"
+        title="a trace"
       />
       <Editor
         entry={{

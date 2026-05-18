@@ -14,7 +14,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function ThemesPage() {
+export default async function AllRingsPage() {
   const { data } = await supabase()
     .from("themes")
     .select("id,period_start,period_end,summary_md,top_distortions,generated_at")
@@ -27,24 +27,24 @@ export default async function ThemesPage() {
     <Screen scroll>
       <TopBar
         left={
-          <Link href="/" style={{ color: "inherit", textDecoration: "none" }}>
+          <Link href="/rings" style={{ color: "inherit", textDecoration: "none" }}>
             ←
           </Link>
         }
-        title="themes"
+        title="rings"
       />
       <div>
-        <Meta>WEEKLY PATTERNS</Meta>
+        <Meta>cedar&apos;s weekly walks</Meta>
         <Display size={32} style={{ marginTop: 4 }}>
-          What&apos;s recurring.
+          what keeps coming back.
         </Display>
       </div>
 
       {themes.length === 0 && (
         <Card accent>
-          <Meta accent>EMPTY</Meta>
+          <Meta accent>nothing yet</Meta>
           <Body size={13} style={{ marginTop: 6 }}>
-            No themes generated yet. Tap ↻ on the dashboard&apos;s memory card to generate one.
+            no rings to show. cedar will mark one once a week of traces has gathered.
           </Body>
         </Card>
       )}

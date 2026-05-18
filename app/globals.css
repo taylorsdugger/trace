@@ -1,38 +1,129 @@
 @import "tailwindcss";
 
+/* =============================================================
+   Trace · Cedar design tokens
+   Direction: moss on paper. Earth + dusk only.
+   ============================================================= */
+
 :root {
-  /* Design tokens */
-  --color-paper: #F7F2E8;
-  --color-surface: #FFFCF5;
-  --color-surface-soft: #F2EBDD;
-  --color-ink: #1A1714;
-  --color-ink-soft: #6B6358;
-  --color-ink-line: rgba(26, 23, 20, 0.12);
-  --color-accent: #B96A52;
-  --color-accent-soft: rgba(185, 106, 82, 0.10);
-  --color-accent-line: rgba(185, 106, 82, 0.35);
+  /* ---------- Surface ---------- */
+  --paper:        #FFFCF5;          /* page background — warm cream */
+  --surface:      #FFFCF5;          /* cards lifted off paper */
+  --bone:         #E1DEC6;          /* secondary surface, dividers */
+  --hairline:     rgba(42, 43, 34, 0.10);
 
-  --color-mood-red: #C97A6E;
-  --color-mood-yellow: #D9A94B;
-  --color-mood-blue: #6D8FB9;
-  --color-mood-green: #7BB191;
-  --color-mood-red-bg: rgba(201, 122, 110, 0.10);
-  --color-mood-yellow-bg: rgba(217, 169, 75, 0.10);
-  --color-mood-blue-bg: rgba(109, 143, 185, 0.10);
-  --color-mood-green-bg: rgba(123, 177, 145, 0.10);
+  /* ---------- Ink ---------- */
+  --ink:          #2A2B22;
+  --ink-soft:     #5E5E4C;
+  --ink-mute:     #8A8576;
 
-  --shadow-card: 0 1px 0 rgba(26, 23, 20, 0.02), 0 1px 2px rgba(26, 23, 20, 0.03);
+  /* ---------- Accents ---------- */
+  --moss:         #5E7148;          /* PRIMARY — links, focus, ring heart */
+  --moss-deep:    #455634;
+  --moss-tint:    #DDE3CF;
+  --bark:         #3F3B2E;          /* cedar sprig stem, deep frame */
+  --clay:         #B96A52;          /* warm secondary, rare emphasis */
+  --clay-soft:    rgba(185, 106, 82, 0.10);
+  --clay-line:    rgba(185, 106, 82, 0.35);
 
-  --radius-card: 20px;
+  /* ---------- Mood quadrants (desaturated to earth family) ---------- */
+  --q-calm:       #7A9266;          /* low-pleasant · resting green */
+  --q-bright:     #C9A348;          /* high-pleasant · warm ochre */
+  --q-low:        #6E8197;          /* low-unpleasant · dusk blue */
+  --q-sharp:      #C97A6E;          /* high-unpleasant · clay rose */
+  --q-calm-bg:    rgba(122, 146, 102, 0.10);
+  --q-bright-bg:  rgba(201, 163, 72, 0.10);
+  --q-low-bg:     rgba(110, 129, 151, 0.10);
+  --q-sharp-bg:   rgba(201, 122, 110, 0.10);
+
+  /* ---------- Type ---------- */
+  --font-serif:   var(--font-lora), 'Iowan Old Style', Georgia, serif;
+  --font-sans:    var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  --font-mono:    var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* ---------- Radii ---------- */
+  --r-sm:   8px;
+  --r-md:  14px;
+  --r-lg:  22px;
+  --r-xl:  28px;
+  --r-pill: 999px;
+
+  /* ---------- Shadow (soft paper lift) ---------- */
+  --shadow-sm: 0 1px 0 rgba(42,43,34,0.04);
+  --shadow-md: 0 1px 0 rgba(42,43,34,0.04), 0 8px 22px rgba(42,43,34,0.06);
+  --shadow-lg: 0 2px 0 rgba(42,43,34,0.04), 0 18px 40px rgba(42,43,34,0.08);
+
+  /* ---------- Spacing (4px base) ---------- */
+  --s-1:  4px;
+  --s-2:  8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+
+  /* ---------- Type scale ---------- */
+  --t-display: 48px;
+  --t-h1:      32px;
+  --t-h2:      22px;
+  --t-body:    16px;
+  --t-read:    17px;
+  --t-small:   14px;
+  --t-meta:    10px;
+
+  /* ---------- Motion ---------- */
+  --ease:     cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-fast: 140ms;
+  --dur-base: 240ms;
+  --dur-slow: 480ms;
+
+  /* =============================================================
+     Legacy aliases — existing components reference these names.
+     Will be removed in the per-page sweep (step 6).
+     ============================================================= */
+  --color-paper:        var(--paper);
+  --color-surface:      var(--surface);
+  --color-surface-soft: var(--bone);
+  --color-ink:          var(--ink);
+  --color-ink-soft:     var(--ink-soft);
+  --color-ink-line:     var(--hairline);
+
+  /* Primary accent moves from clay → moss. Old --color-accent tokens
+     now resolve to moss; clay remains available via --clay if a UI
+     spot genuinely wants the warm secondary. */
+  --color-accent:       var(--moss);
+  --color-accent-soft:  rgba(94, 113, 72, 0.10);
+  --color-accent-line:  rgba(94, 113, 72, 0.35);
+
+  --color-mood-red:     var(--q-sharp);
+  --color-mood-yellow:  var(--q-bright);
+  --color-mood-blue:    var(--q-low);
+  --color-mood-green:   var(--q-calm);
+  --color-mood-red-bg:    var(--q-sharp-bg);
+  --color-mood-yellow-bg: var(--q-bright-bg);
+  --color-mood-blue-bg:   var(--q-low-bg);
+  --color-mood-green-bg:  var(--q-calm-bg);
+
+  --shadow-card: var(--shadow-sm);
+  --radius-card: var(--r-lg);
+
+  /* Old font alias — keeps existing `var(--font-instrument-serif)`
+     usages pointing at Lora until the sweep. */
+  --font-instrument-serif: var(--font-serif);
 }
 
 @theme inline {
   --color-paper: var(--color-paper);
   --color-surface: var(--color-surface);
   --color-surface-soft: var(--color-surface-soft);
+  --color-bone: var(--bone);
   --color-ink: var(--color-ink);
   --color-ink-soft: var(--color-ink-soft);
   --color-ink-line: var(--color-ink-line);
+  --color-moss: var(--moss);
+  --color-bark: var(--bark);
+  --color-clay: var(--clay);
   --color-accent: var(--color-accent);
   --color-accent-soft: var(--color-accent-soft);
   --color-accent-line: var(--color-accent-line);
@@ -41,25 +132,53 @@
   --color-mood-blue: var(--color-mood-blue);
   --color-mood-green: var(--color-mood-green);
 
-  --font-display: var(--font-instrument-serif);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-jetbrains-mono);
+  --font-serif: var(--font-serif);
+  --font-display: var(--font-serif);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
 
   --shadow-card: var(--shadow-card);
-
   --radius-card: var(--radius-card);
 }
 
+/* =============================================================
+   Dark companion (Forest at dusk) — tokens land now, no UI toggle.
+   ============================================================= */
+[data-theme="dark"] {
+  --paper:    #1C1F1A;
+  --surface:  #232720;
+  --bone:     #2A2F26;
+  --hairline: rgba(234, 223, 199, 0.10);
+
+  --ink:      #EADFC7;
+  --ink-soft: #9A9485;
+  --ink-mute: #6E695C;
+
+  --moss:      #8FA86E;
+  --moss-deep: #B1C68E;
+  --moss-tint: rgba(143, 168, 110, 0.16);
+  --bark:      #C9BFA6;
+  --clay:      #C68B6E;
+
+  --color-accent-soft: rgba(143, 168, 110, 0.16);
+  --color-accent-line: rgba(143, 168, 110, 0.40);
+}
+
 html, body {
-  background: var(--color-paper);
-  color: var(--color-ink);
+  background: var(--paper);
+  color: var(--ink);
 }
 
 body {
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
-  font-feature-settings: "ss01", "cv11";
+  font-family: var(--font-sans);
   letter-spacing: -0.1px;
   -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.3px;
 }
 
 /* Press states */
@@ -81,15 +200,15 @@ button:active, [role="button"]:active {
 /* Tablet: wider single column, still centered (no sidebar yet at this width — sidebar kicks in at md = 768). */
 @media (min-width: 640px) and (max-width: 767.98px) {
   html, body {
-    background: var(--color-surface-soft);
+    background: var(--bone);
   }
   .app-frame {
     max-width: 600px;
-    background: var(--color-paper);
-    border-left: 1px solid var(--color-ink-line);
-    border-right: 1px solid var(--color-ink-line);
+    background: var(--paper);
+    border-left: 1px solid var(--hairline);
+    border-right: 1px solid var(--hairline);
     min-height: 100dvh;
-    box-shadow: 0 0 60px rgba(26, 23, 20, 0.05);
+    box-shadow: 0 0 60px rgba(42, 43, 34, 0.05);
   }
 }
 
@@ -116,7 +235,7 @@ input, textarea, select {
   color: inherit;
 }
 input::placeholder, textarea::placeholder {
-  color: var(--color-ink-soft);
+  color: var(--ink-soft);
   opacity: 0.65;
 }
 input:focus, textarea:focus {
@@ -133,31 +252,31 @@ input:focus, textarea:focus {
 
 /* Rendered markdown inside theme/summary cards */
 .theme-md {
-  font: 400 14px/1.55 var(--font-geist-sans), sans-serif;
-  color: var(--color-ink);
+  font: 400 14px/1.55 var(--font-sans);
+  color: var(--ink);
 }
 .theme-md > *:first-child { margin-top: 0; }
 .theme-md > *:last-child { margin-bottom: 0; }
 .theme-md h1, .theme-md h2, .theme-md h3, .theme-md h4 {
-  font: 500 13px var(--font-geist-sans), sans-serif;
-  color: var(--color-ink);
+  font: 500 13px var(--font-sans);
+  color: var(--ink);
   letter-spacing: 0.2px;
   margin: 14px 0 4px;
 }
 .theme-md p { margin: 6px 0; }
 .theme-md ul, .theme-md ol { margin: 6px 0; padding-left: 18px; }
 .theme-md li { margin: 2px 0; }
-.theme-md strong { font-weight: 600; color: var(--color-ink); }
+.theme-md strong { font-weight: 600; color: var(--ink); }
 .theme-md em { font-style: italic; }
 .theme-md code {
-  font: 12px var(--font-jetbrains-mono), monospace;
-  background: var(--color-surface-soft);
+  font: 12px var(--font-mono);
+  background: var(--bone);
   padding: 1px 4px;
   border-radius: 4px;
 }
 .theme-md blockquote {
   margin: 8px 0;
   padding-left: 10px;
-  border-left: 2px solid var(--color-ink-line);
-  color: var(--color-ink-soft);
+  border-left: 2px solid var(--hairline);
+  color: var(--ink-soft);
 }

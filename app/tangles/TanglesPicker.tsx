@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Screen, TopBar, Card, Body, Btn, IconBtn } from "@/components/ui";
 import { TRAPS } from "@/lib/traps";
 
-export function TrapsPicker() {
+export function TanglesPicker() {
   const router = useRouter();
   const params = useSearchParams();
   const preselected = params.get("trap");
@@ -36,7 +36,7 @@ export function TrapsPicker() {
 
   function confirm() {
     if (typeof window !== "undefined") {
-      sessionStorage.setItem("trace.traps", JSON.stringify(Array.from(selected)));
+      sessionStorage.setItem("trace.tangles", JSON.stringify(Array.from(selected)));
     }
     leave();
   }
@@ -45,12 +45,12 @@ export function TrapsPicker() {
     <Screen>
       <TopBar
         left={<IconBtn onClick={leave}>← back</IconBtn>}
-        title="thinking traps"
+        title="tangles"
         right="?"
       />
 
       <Body soft size={13}>
-        Tap any that fit. More than one is fine.
+        what&apos;s caught in the underbrush. tap any that fit.
       </Body>
 
       <div

@@ -406,52 +406,57 @@ export function MoodDot({
   );
 }
 
+export function TreeRing({
+  size = 28,
+  style,
+  showHeart = true,
+}: {
+  size?: number;
+  style?: CSSProperties;
+  showHeart?: boolean;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 78 78"
+      role="img"
+      aria-label="Trace"
+      style={{ display: "inline-block", color: "var(--ink)", ...style }}
+    >
+      <circle cx="39" cy="39" r="34" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.30" />
+      <circle cx="39" cy="39" r="26" fill="none" stroke="currentColor" strokeWidth="1.3" opacity="0.55" />
+      <circle cx="39" cy="39" r="18" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="39" cy="39" r="10" fill="none" stroke="currentColor" strokeWidth="1.7" />
+      {showHeart && <circle cx="39" cy="39" r="3.6" fill="var(--moss)" />}
+    </svg>
+  );
+}
+
 export function TraceLogo({
-  size = 22,
+  size = 26,
   style,
 }: {
   size?: number;
   style?: CSSProperties;
 }) {
-  // Dots: blue / green / yellow / red — same as the mood quadrant palette.
-  const dot = Math.round(size * 0.32);
-  const gap = Math.round(size * 0.18);
+  // Tree-ring identity + Lora wordmark. Earth + dusk; heart in moss.
+  const wordSize = Math.round(size * 1.35);
   return (
     <div
       style={{
         display: "inline-flex",
-        alignItems: "baseline",
-        gap: Math.round(size * 0.42),
-        color: "var(--color-ink)",
+        alignItems: "center",
+        gap: Math.round(size * 0.38),
+        color: "var(--ink)",
         ...style,
       }}
     >
+      <TreeRing size={size} />
       <span
         style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap,
-          transform: `translateY(-${Math.round(size * 0.12)}px)`,
-        }}
-      >
-        {["#6D8FB9", "#7BB191", "#D9A94B", "#C97A6E"].map((c) => (
-          <span
-            key={c}
-            style={{
-              width: dot,
-              height: dot,
-              borderRadius: "50%",
-              background: c,
-              display: "inline-block",
-            }}
-          />
-        ))}
-      </span>
-      <span
-        style={{
-          font: `400 ${size}px var(--font-instrument-serif), Georgia, serif`,
-          letterSpacing: -0.5,
-          lineHeight: 1,
+          font: `400 ${wordSize}px/1 var(--font-serif)`,
+          letterSpacing: -0.8,
         }}
       >
         trace
@@ -460,12 +465,43 @@ export function TraceLogo({
   );
 }
 
+export function CedarSprig({
+  size = 18,
+  style,
+}: {
+  size?: number;
+  style?: CSSProperties;
+}) {
+  // Cedar's voice glyph. Only beside Cedar's words — never decorative.
+  const w = Math.round(size * (28 / 44));
+  return (
+    <svg
+      width={w}
+      height={size}
+      viewBox="0 0 28 44"
+      role="img"
+      aria-label="Cedar"
+      style={{ display: "inline-block", flexShrink: 0, ...style }}
+    >
+      <line x1="14" y1="2" x2="14" y2="42" stroke="var(--bark)" strokeWidth="1.4" strokeLinecap="round" />
+      <g stroke="var(--moss)" strokeWidth="1.2" strokeLinecap="round">
+        <line x1="14" y1="9" x2="6" y2="13" />
+        <line x1="14" y1="9" x2="22" y2="13" />
+        <line x1="14" y1="18" x2="4" y2="24" />
+        <line x1="14" y1="18" x2="24" y2="24" />
+        <line x1="14" y1="28" x2="6" y2="34" />
+        <line x1="14" y1="28" x2="22" y2="34" />
+      </g>
+    </svg>
+  );
+}
+
 export function TabBar({ active = 0 }: { active?: 0 | 1 | 2 | 3 }) {
   const tabs: { id: string; icon: string; label: string; href: string }[] = [
     { id: "today", icon: "◐", label: "today", href: "/" },
-    { id: "write", icon: "✎", label: "write", href: "/entries/new" },
-    { id: "patterns", icon: "◇", label: "patterns", href: "/reflection" },
-    { id: "you", icon: "○", label: "you", href: "/entries" },
+    { id: "write", icon: "✎", label: "a trace", href: "/trail/new" },
+    { id: "rings", icon: "◇", label: "rings", href: "/rings" },
+    { id: "trail", icon: "○", label: "trail", href: "/trail" },
   ];
   return (
     <div
