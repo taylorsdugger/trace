@@ -173,7 +173,7 @@ export function Meta({
   return (
     <div
       style={{
-        font: "500 10px var(--font-mono), monospace",
+        font: "500 12px var(--font-mono), monospace",
         color: accent ? "var(--moss)" : "var(--ink-soft)",
         letterSpacing: 0.6,
         textTransform: "uppercase",
@@ -385,13 +385,16 @@ export function MoodDot({
   color,
   size = 14,
   ring,
+  className,
 }: {
   color: string;
   size?: number;
   ring?: boolean;
+  className?: string;
 }) {
   return (
     <div
+      className={className}
       style={{
         width: size,
         height: size,
@@ -520,7 +523,7 @@ export function TabBar({ active = 0 }: { active?: 0 | 1 | 2 | 3 }) {
         paddingBottom: "calc(10px + env(safe-area-inset-bottom))",
         paddingLeft: 18,
         paddingRight: 18,
-        background: "var(--paper)",
+        background: "var(--nav)",
         borderTop: "1px solid var(--hairline)",
         zIndex: 10,
       }}

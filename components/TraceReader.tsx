@@ -25,14 +25,19 @@ type Block =
   | { kind: "note"; question: string; answer: string };
 
 function parseBody(md: string): Block[] {
-  // Split on blank lines into paragraphs, then group `> question` + following
-  // paragraph into a Cedar annotation block.
+  // Split on blank lines into paragraphs, then group consecutive `>` paragraphs
+  // as one Cedar question and the following non-`>` paragraph as the reply.
   const paragraphs = md.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
   const blocks: Block[] = [];
   for (let i = 0; i < paragraphs.length; i++) {
     const p = paragraphs[i];
     if (p.startsWith(">")) {
-      const question = p.replace(/^>\s?/gm, "").trim();
+      const cedarParts: string[] = [p.replace(/^>\s?/gm, "").trim()];
+      while (i + 1 < paragraphs.length && paragraphs[i + 1].startsWith(">")) {
+        i++;
+        cedarParts.push(paragraphs[i].replace(/^>\s?/gm, "").trim());
+      }
+      const question = cedarParts.join("\n\n");
       const answer = paragraphs[i + 1] && !paragraphs[i + 1].startsWith(">")
         ? paragraphs[i + 1]
         : "";
@@ -157,36 +162,71 @@ export function TraceReader({ entry }: { entry: ReaderEntry }) {
               {b.content}
             </p>
           ) : (
-            <aside
+            <div
               key={i}
               style={{
                 display: "flex",
-                gap: 10,
-                padding: "12px 14px",
-                background: "var(--moss-tint)",
-                borderRadius: 14,
-                borderLeft: "2px solid var(--moss)",
-                alignSelf: "flex-end",
-                maxWidth: "85%",
+                flexDirection: "column",
+                gap: 8,
               }}
             >
-              <CedarSprig size={20} style={{ marginTop: 2, flexShrink: 0 }} />
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                <Body size={12} soft style={{ fontStyle: "italic", lineHeight: 1.4 }}>
-                  {b.question}
-                </Body>
-                <Body
-                  size={14}
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  alignItems: "flex-start",
+                  alignSelf: "flex-start",
+                  maxWidth: "85%",
+                }}
+              >
+                <CedarSprig size={20} style={{ marginTop: 8, flexShrink: 0 }} />
+                <div
                   style={{
-                    fontFamily: "var(--font-serif)",
-                    lineHeight: 1.55,
-                    whiteSpace: "pre-wrap",
+                    padding: "10px 14px",
+                    background: "var(--moss-tint)",
+                    borderRadius: 14,
+                    borderLeft: "2px solid var(--moss)",
                   }}
                 >
-                  {b.answer}
-                </Body>
+                  <Body
+                    size={14}
+                    style={{
+                      fontFamily: "var(--font-serif)",
+                      fontStyle: "italic",
+                      lineHeight: 1.55,
+                      whiteSpace: "pre-wrap",
+                    }}
+                  >
+                    {b.question}
+                  </Body>
+                </div>
               </div>
-            </aside>
+              {b.answer && (
+                <div
+                  style={{
+                    alignSelf: "flex-end",
+                    maxWidth: "85%",
+                    padding: "10px 14px",
+                    background: "var(--surface)",
+                    border: "1px solid var(--hairline)",
+                    borderRadius: 14,
+                    boxShadow: "var(--shadow-sm)",
+                  }}
+                >
+                  <Body
+                    size={14}
+                    style={{
+                      fontFamily: "var(--font-serif)",
+                      lineHeight: 1.55,
+                      whiteSpace: "pre-wrap",
+                      color: "var(--ink)",
+                    }}
+                  >
+                    {b.answer}
+                  </Body>
+                </div>
+              )}
+            </div>
           ),
         )}
       </div>

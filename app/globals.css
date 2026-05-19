@@ -7,8 +7,9 @@
 
 :root {
   /* ---------- Surface ---------- */
-  --paper:        #FFFCF5;          /* page background — warm cream */
-  --surface:      #FFFCF5;          /* cards lifted off paper */
+  --paper:        #FDFDFB;          /* page background — almost white */
+  --surface:      #FFFFFF;          /* cards lifted off paper */
+  --nav:          #F1F1EE;          /* navigation surfaces — light warm grey */
   --bone:         #E1DEC6;          /* secondary surface, dividers */
   --hairline:     rgba(42, 43, 34, 0.10);
 
@@ -105,8 +106,11 @@
    Dark companion (Forest at dusk) — tokens land now, no UI toggle.
    ============================================================= */
 [data-theme="dark"] {
+  color-scheme: dark;
+
   --paper:    #1C1F1A;
   --surface:  #232720;
+  --nav:      #181B16;
   --bone:     #2A2F26;
   --hairline: rgba(234, 223, 199, 0.10);
 
@@ -116,13 +120,27 @@
 
   --moss:      #8FA86E;
   --moss-deep: #B1C68E;
-  --moss-tint: rgba(143, 168, 110, 0.16);
-  --bark:      #C9BFA6;
-  --clay:      #C68B6E;
-
+  --moss-tint: rgba(143, 168, 110, 0.18);
   --moss-soft: rgba(143, 168, 110, 0.16);
   --moss-line: rgba(143, 168, 110, 0.40);
-  --moss-tint: rgba(143, 168, 110, 0.18);
+  --bark:      #C9BFA6;
+  --clay:      #C68B6E;
+  --clay-soft: rgba(198, 139, 110, 0.14);
+  --clay-line: rgba(198, 139, 110, 0.40);
+
+  /* Mood quadrants — slightly lifted for dark surfaces */
+  --q-calm:      #8FA86E;
+  --q-bright:    #D7B566;
+  --q-low:       #8AA0BA;
+  --q-sharp:     #D38C7F;
+  --q-calm-bg:   rgba(143, 168, 110, 0.14);
+  --q-bright-bg: rgba(215, 181, 102, 0.14);
+  --q-low-bg:    rgba(138, 160, 186, 0.14);
+  --q-sharp-bg:  rgba(211, 140, 127, 0.14);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
 }
 
 html, body {
@@ -148,6 +166,87 @@ button, [role="button"] {
 }
 button:active, [role="button"]:active {
   transform: scale(0.97);
+}
+
+/* SideNav tabs: quiet hover + active treatment */
+.nav-tab {
+  transition: background-color 150ms ease, color 150ms ease;
+}
+.nav-tab:hover {
+  background: var(--moss-soft);
+  color: var(--moss-deep);
+}
+.nav-tab:hover .nav-tab-icon {
+  color: var(--moss);
+}
+.nav-card {
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+.nav-card:hover {
+  background: var(--moss-soft);
+  border-color: var(--moss-line);
+  transform: translateX(2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-card:hover { transform: none; }
+}
+
+/* Mood pulse bubbles: lift + color halo on hover */
+.mood-cell {
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 14px;
+  transition: transform 220ms ease, background-color 220ms ease;
+}
+.mood-cell .mood-dot {
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+.mood-cell:hover {
+  transform: translateY(-3px);
+  background: var(--moss-soft);
+}
+.mood-cell:hover .mood-dot {
+  transform: scale(1.18);
+  box-shadow:
+    0 0 0 3px var(--surface),
+    0 0 0 6px var(--dot),
+    0 8px 18px var(--dot);
+}
+.mood-cell:hover .mood-cell-label {
+  color: var(--ink);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mood-cell, .mood-cell .mood-dot { transition: none; }
+  .mood-cell:hover, .mood-cell:hover .mood-dot { transform: none; }
+}
+
+/* Quick-action card hover: subtle lift + moss-tinted edge */
+.quick-action {
+  transition:
+    transform 200ms var(--ease, ease),
+    box-shadow 200ms var(--ease, ease),
+    background-color 200ms var(--ease, ease),
+    border-color 200ms var(--ease, ease);
+  will-change: transform;
+}
+.group:hover .quick-action {
+  transform: translateY(-2px);
+  background: var(--moss-soft);
+  border-color: var(--moss-line);
+  box-shadow:
+    0 1px 0 rgba(42, 43, 34, 0.03),
+    0 10px 24px rgba(94, 113, 72, 0.10);
+}
+.group:hover .quick-action :where(h1, h2, h3, div) {
+  color: var(--moss-deep);
+}
+.group:active .quick-action {
+  transform: translateY(0);
+  box-shadow: 0 1px 0 rgba(42, 43, 34, 0.04);
+}
+@media (prefers-reduced-motion: reduce) {
+  .quick-action { transition: background-color 200ms ease, border-color 200ms ease; }
+  .group:hover .quick-action { transform: none; }
 }
 
 /* Mobile-first frame: edge-to-edge on phones, expanding content column at tablet/desktop. */

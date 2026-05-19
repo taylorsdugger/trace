@@ -117,6 +117,7 @@ export function MoodMeter() {
   const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next") ?? "/trail/new?mode=quick";
+  const quadrant = params.get("q");
   const [selected, setSelected] = useState<Emotion | null>(null);
   const [focusedWord, setFocusedWord] = useState<string | null>(null);
   const [hoveredWord, setHoveredWord] = useState<string | null>(null);
@@ -148,14 +149,27 @@ export function MoodMeter() {
     return () => ro.disconnect();
   }, []);
 
-  // Center the grid on (0.5, 0.5) whenever the gutter changes so we always
-  // start at the origin and stay centered after a resize.
+  // Center the grid on (0.5, 0.5) whenever the gutter changes — or on the
+  // requested quadrant center when arriving via /check-in?q=<color>.
   useLayoutEffect(() => {
     const v = viewportRef.current;
     if (!v) return;
-    v.scrollLeft = (v.scrollWidth - v.clientWidth) / 2;
-    v.scrollTop = (v.scrollHeight - v.clientHeight) / 2;
-  }, [gutter]);
+    // Quadrant centers in grid coords (col, row) on the 12×12 grid.
+    const QUADRANT_CENTERS: Record<string, { col: number; row: number }> = {
+      red: { col: 3, row: 3 },
+      yellow: { col: 9, row: 3 },
+      blue: { col: 3, row: 9 },
+      green: { col: 9, row: 9 },
+    };
+    const target = quadrant ? QUADRANT_CENTERS[quadrant] : null;
+    if (target) {
+      v.scrollLeft = gutter.x + target.col * BUBBLE_SIZE - v.clientWidth / 2;
+      v.scrollTop = gutter.y + target.row * BUBBLE_SIZE - v.clientHeight / 2;
+    } else {
+      v.scrollLeft = (v.scrollWidth - v.clientWidth) / 2;
+      v.scrollTop = (v.scrollHeight - v.clientHeight) / 2;
+    }
+  }, [gutter, quadrant]);
 
   // Highlight the emotion closest to the viewport center while panning/scrolling.
   useEffect(() => {

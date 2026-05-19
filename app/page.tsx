@@ -5,6 +5,7 @@ import { Screen, TopBar, Card, Display, Heading, Body, Meta, MoodDot, TabBar, Tr
 import { QUADRANT_COLORS } from "@/lib/emotions";
 import { dayKey, TZ_COOKIE } from "@/lib/dates";
 import { MemoryCard } from "@/components/MemoryCard";
+import { StreakCard } from "@/components/StreakCard";
 
 export const dynamic = "force-dynamic";
 
@@ -111,40 +112,65 @@ export default async function HomePage() {
         </Card>
       )}
 
-      {/* mood pulse */}
-      <Link href="/check-in" style={{ textDecoration: "none" }}>
-        <Card>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <Heading>where are you right now?</Heading>
-            <Meta>check in →</Meta>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 14 }}>
-            {(
-              [
-                { color: QUADRANT_COLORS.blue, label: "low" },
-                { color: QUADRANT_COLORS.green, label: "calm" },
-                { color: QUADRANT_COLORS.yellow, label: "high" },
-                { color: QUADRANT_COLORS.red, label: "tense", ring: true },
-              ] as const
-            ).map((d, i) => (
-              <div
-                key={i}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}
-              >
-                <MoodDot color={d.color} size={28} ring={"ring" in d ? d.ring : false} />
-                <div
-                  style={{
-                    font: "11px var(--font-sans), sans-serif",
-                    color: "var(--ink-soft)",
-                  }}
+      {/* streak + mood pulse */}
+      <div className="flex flex-col md:flex-row gap-[14px]">
+        <div className="md:flex-1 md:min-w-0">
+          <StreakCard
+            streak={data?.streak ?? 0}
+            thisMonth={data?.thisMonth ?? 0}
+            dayCounts={data?.dayCounts ?? {}}
+            tz={tz}
+          />
+        </div>
+        <div className="md:flex-1 md:min-w-0">
+          <Card style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Heading>where are you right now?</Heading>
+              <Link href="/check-in" style={{ textDecoration: "none", color: "inherit" }}>
+                <Meta>check in →</Meta>
+              </Link>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-evenly", marginTop: "auto", paddingTop: 14 }}>
+              {(
+                [
+                  { quadrant: "blue", color: QUADRANT_COLORS.blue, label: "low" },
+                  { quadrant: "green", color: QUADRANT_COLORS.green, label: "calm" },
+                  { quadrant: "yellow", color: QUADRANT_COLORS.yellow, label: "high" },
+                  { quadrant: "red", color: QUADRANT_COLORS.red, label: "tense" },
+                ] as const
+              ).map((d, i) => (
+                <Link
+                  key={i}
+                  href={`/check-in?q=${d.quadrant}`}
+                  className="mood-cell"
+                  style={
+                    {
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 6,
+                      textDecoration: "none",
+                      color: "inherit",
+                      "--dot": d.color,
+                    } as React.CSSProperties
+                  }
                 >
-                  {d.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </Link>
+                  <MoodDot className="mood-dot" color={d.color} size={36} />
+                  <div
+                    className="mood-cell-label"
+                    style={{
+                      font: "11px var(--font-sans), sans-serif",
+                      color: "var(--ink-soft)",
+                    }}
+                  >
+                    {d.label}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </Card>
+        </div>
+      </div>
 
       {/* memory prompt */}
       <MemoryCard theme={data?.latestTheme ?? null} />
@@ -153,18 +179,24 @@ export default async function HomePage() {
       <div style={{ display: "flex", gap: 10 }}>
         <Link
           href="/trail/new?mode=quick"
-          style={{ flex: 1, textDecoration: "none" }}
+          className="group flex-1 no-underline"
         >
-          <Card style={{ padding: 14, textAlign: "center" }}>
+          <Card
+            className="quick-action"
+            style={{ padding: 40, textAlign: "center" }}
+          >
             <Meta>30 SEC</Meta>
             <Heading style={{ marginTop: 4 }}>a quick trace</Heading>
           </Card>
         </Link>
         <Link
           href="/trail/new?mode=detailed"
-          style={{ flex: 1, textDecoration: "none" }}
+          className="group flex-1 no-underline"
         >
-          <Card style={{ padding: 14, textAlign: "center" }}>
+          <Card
+            className="quick-action"
+            style={{ padding: 40, textAlign: "center" }}
+          >
             <Meta>3 MIN</Meta>
             <Heading style={{ marginTop: 4 }}>sit with this one</Heading>
           </Card>

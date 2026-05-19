@@ -31,11 +31,11 @@ function makeStarter(seenQuestions: string[]): string {
   const avoid = seenQuestions.length
     ? `\n\nDo not ask any of these (or a paraphrase): ${seenQuestions.map((q) => `"${q}"`).join("; ")}.`
     : "";
-  return `Ask me one short, specific question (under 15 words) about: ${lens}. Quote a phrase from what i wrote if useful.${avoid}`;
+  return `Open a real turn on this trace, focused on: ${lens}. Say what you actually notice — quote a phrase from what i wrote, name the tangle or assumption you see, take a position. End with one specific question only if it earns its place. Don't just lob a question back; give me something to sit with.${avoid}`;
 }
 
 const DIFFERENT_INSTRUCTION =
-  "Ask a different short question (under 15 words). Pick a new angle — situation, body, assumption, tangle, value, time, what i'm avoiding, what i'd tell a friend. Do not paraphrase your previous question.";
+  "Take a different angle than your last turn — situation, body, assumption, tangle, value, time, what i'm avoiding, what i'd tell a friend. Say what you notice in a few real sentences before any question. Do not paraphrase your previous question.";
 
 export function TraceExpand({ entryId, context, currentBody }: Props) {
   const router = useRouter();
@@ -190,7 +190,14 @@ export function TraceExpand({ entryId, context, currentBody }: Props) {
       if (m.role === "cedar") {
         const next = msgs[i + 1];
         if (next && next.role === "you") {
-          appendix += `\n\n> ${m.content.trim()}\n\n${next.content.trim()}`;
+          // Prefix every line of Cedar's reply with `>` so multi-paragraph
+          // messages stay grouped as one quoted block when parsed back.
+          const quoted = m.content
+            .trim()
+            .split("\n")
+            .map((line) => (line.length ? `> ${line}` : ">"))
+            .join("\n");
+          appendix += `\n\n${quoted}\n\n${next.content.trim()}`;
           i += 2;
         } else {
           // unanswered cedar question — don't save it

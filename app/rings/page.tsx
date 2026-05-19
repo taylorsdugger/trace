@@ -90,7 +90,7 @@ export default async function RingsPage() {
 
       <div>
         <Meta accent>what keeps coming back</Meta>
-        <Display size={32} style={{ marginTop: 6, lineHeight: 1.1, whiteSpace: "pre-line" }}>
+        <Display size={20} style={{ marginTop: 6, lineHeight: 1.1, whiteSpace: "pre-line" }}>
           {headline}
         </Display>
       </div>

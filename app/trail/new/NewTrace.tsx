@@ -373,7 +373,7 @@ export function NewTrace() {
             disabled={saving}
             style={{ color: "var(--ink)", font: "500 13px var(--font-sans), sans-serif" }}
           >
-            {saving ? "leaving…" : "leave the trace"}
+            {saving ? "saving..." : "save your trace"}
           </IconBtn>
         }
       />
