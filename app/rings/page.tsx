@@ -32,6 +32,7 @@ async function loadRings() {
     sb
       .from("themes")
       .select("id,period_start,period_end,summary_md,top_distortions,generated_at")
+      .is("hidden_at", null)
       .order("generated_at", { ascending: false })
       .limit(1),
     sb.from("entries").select("created_at").gte("created_at", since),
