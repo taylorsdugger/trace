@@ -73,7 +73,7 @@ export default async function TrailPage() {
 
       <EntriesSearch fallback={entries} />
 
-      <TabBar active={3} />
+      <TabBar active={4} />
     </Screen>
   );
 }

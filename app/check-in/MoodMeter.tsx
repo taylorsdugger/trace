@@ -11,7 +11,7 @@ import {
   energyOf,
   type Emotion,
 } from "@/lib/emotions";
-import { Screen, TopBar, Body, Meta } from "@/components/ui";
+import { Screen, TopBar, Body, Meta, SleepHorizon } from "@/components/ui";
 
 const BUBBLE_SIZE = 108;
 const GRID_PX_WIDTH = BUBBLE_SIZE * EMOTION_GRID.cols;
@@ -122,6 +122,7 @@ export function MoodMeter() {
   const [focusedWord, setFocusedWord] = useState<string | null>(null);
   const [hoveredWord, setHoveredWord] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sleepHours, setSleepHours] = useState<number | null>(null);
 
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
@@ -318,6 +319,7 @@ export function MoodMeter() {
           valence: valenceOf(selected),
           energy: energyOf(selected),
           quadrant: selected.quadrant,
+          sleep_hours: sleepHours,
           at: Date.now(),
         })
       );
@@ -462,6 +464,58 @@ export function MoodMeter() {
           {error}
         </Body>
       )}
+
+      {/* Sleep — and last night? */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+          <Meta>and last night?</Meta>
+          <span
+            style={{
+              font: "500 11px var(--font-mono), monospace",
+              color: sleepHours == null ? "var(--ink-mute)" : "var(--ink)",
+              letterSpacing: 0.3,
+            }}
+          >
+            {sleepHours == null ? "—" : `${sleepHours}h`}
+          </span>
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          {[4, 5, 6, 7, 8].map((h) => {
+            const active = sleepHours === h;
+            return (
+              <button
+                key={h}
+                type="button"
+                onClick={() => setSleepHours(active ? null : h)}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "8px 4px",
+                  borderRadius: 12,
+                  background: active ? "var(--surface)" : "transparent",
+                  border: active ? "1px solid var(--hairline)" : "1px solid transparent",
+                  cursor: "pointer",
+                }}
+                aria-pressed={active}
+              >
+                <SleepHorizon hours={h} width={36} height={7} />
+                <span
+                  style={{
+                    font: "500 10px var(--font-mono), monospace",
+                    color: active ? "var(--ink)" : "var(--ink-soft)",
+                    letterSpacing: 0.3,
+                  }}
+                >
+                  {h}h
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <button
         type="button"

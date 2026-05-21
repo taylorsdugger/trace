@@ -47,6 +47,7 @@ type StoredMood = {
   valence: number;
   energy: number;
   quadrant: Quadrant;
+  sleep_hours?: number | null;
   at: number;
 };
 
@@ -148,7 +149,12 @@ export function NewTrace() {
       if (Array.isArray(d.traps)) setSelectedTraps(d.traps);
     }
     const m = readSession<StoredMood>("trace.mood");
-    if (m) setMood(m);
+    if (m) {
+      setMood(m);
+      if (m.sleep_hours != null && sleep === "") {
+        setSleep(String(m.sleep_hours));
+      }
+    }
     // trace.tangles is the handoff from the picker — apply it and clear so subsequent
     // mounts don't re-overwrite state with a stale handoff.
     const t = readSession<string[]>("trace.tangles");
@@ -645,7 +651,7 @@ export function NewTrace() {
             </div>
           </div>
 
-          <TabBar active={1} />
+          <TabBar active={2} />
         </>
       ) : (
         <>

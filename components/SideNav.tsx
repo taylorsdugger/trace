@@ -51,6 +51,17 @@ function IconRings() {
   );
 }
 
+function IconTrailhead() {
+  // A signpost at a forking trail — where tomorrow's walk begins.
+  return (
+    <svg {...ICON_PROPS} aria-hidden="true">
+      <path d="M12 21V11" />
+      <path d="M6 7h11l2 -2 -2 -2H6z" />
+      <circle cx="12" cy="21" r="0.6" fill="currentColor" />
+    </svg>
+  );
+}
+
 function IconTrail() {
   // A winding path with three steps along it.
   return (
@@ -67,6 +78,7 @@ type Tab = { id: string; icon: ReactNode; label: string; href: string };
 
 const TABS: readonly Tab[] = [
   { id: "today", icon: <IconToday />, label: "today", href: "/" },
+  { id: "trailhead", icon: <IconTrailhead />, label: "trailhead", href: "/trailhead" },
   { id: "write", icon: <IconWrite />, label: "a trace", href: "/trail/new" },
   { id: "rings", icon: <IconRings />, label: "rings", href: "/rings" },
   { id: "trail", icon: <IconTrail />, label: "trail", href: "/trail" },

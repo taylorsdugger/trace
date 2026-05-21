@@ -48,10 +48,16 @@ export async function generateRing(opts: {
     )
     .join("\n\n---\n\n");
 
+  const stepsContext = await buildStepsContext(sb, start, end);
+
+  const userMessage = stepsContext
+    ? `${corpus.slice(0, 22000)}\n\n---\n\n${stepsContext}`
+    : corpus.slice(0, 24000);
+
   const summary = await chat(
     [
       { role: "system", content: THEMES_SYSTEM },
-      { role: "user", content: corpus.slice(0, 24000) },
+      { role: "user", content: userMessage },
     ],
     { temperature: 0.4 },
   );
@@ -154,6 +160,104 @@ export async function mergeRings(
   if (hideErr) return { ok: false, error: hideErr.message };
 
   return { ok: true, id: inserted.id };
+}
+
+async function buildStepsContext(
+  sb: ReturnType<typeof supabase>,
+  start: Date,
+  end: Date,
+): Promise<string | null> {
+  const startKey = dayKey(start);
+  const endKey = dayKey(end);
+
+  // Pull steps whose due_date OR walked_at falls in the window. Two queries
+  // because the columns are independent and supabase-js can't OR across them
+  // cleanly with date+timestamptz mixed types.
+  const [dueRes, walkedRes] = await Promise.all([
+    sb
+      .from("steps")
+      .select("id,title,status,due_date,walked_at,created_at")
+      .gte("due_date", startKey)
+      .lte("due_date", endKey),
+    sb
+      .from("steps")
+      .select("id,title,status,due_date,walked_at,created_at")
+      .gte("walked_at", start.toISOString())
+      .lt("walked_at", end.toISOString()),
+  ]);
+
+  type Row = {
+    id: string;
+    title: string;
+    status: "open" | "walked" | "let_rest";
+    due_date: string | null;
+    walked_at: string | null;
+    created_at: string;
+  };
+  const byId = new Map<string, Row>();
+  for (const r of (dueRes.data ?? []) as Row[]) byId.set(r.id, r);
+  for (const r of (walkedRes.data ?? []) as Row[]) byId.set(r.id, r);
+  if (byId.size === 0) return null;
+
+  // Aggregate per-day: which day to attribute a step to?
+  // - walked: the walked_at day
+  // - let_rest / open: the due_date day (if any)
+  const perDay = new Map<
+    string,
+    { walked: string[]; rested: string[]; openLeft: string[] }
+  >();
+  let totalWalked = 0;
+  let totalRested = 0;
+  let totalOpenLeft = 0;
+
+  for (const r of byId.values()) {
+    if (r.status === "walked") {
+      const k = r.walked_at ? dayKey(r.walked_at) : r.due_date;
+      if (!k) continue;
+      const bucket = perDay.get(k) ?? { walked: [], rested: [], openLeft: [] };
+      bucket.walked.push(r.title);
+      perDay.set(k, bucket);
+      totalWalked++;
+    } else if (r.status === "let_rest") {
+      const k = r.due_date;
+      if (!k) continue;
+      const bucket = perDay.get(k) ?? { walked: [], rested: [], openLeft: [] };
+      bucket.rested.push(r.title);
+      perDay.set(k, bucket);
+      totalRested++;
+    } else if (r.status === "open") {
+      const k = r.due_date;
+      if (!k) continue;
+      // Only count as "left open" if the due day is already past (relative to end).
+      if (k >= endKey) continue;
+      const bucket = perDay.get(k) ?? { walked: [], rested: [], openLeft: [] };
+      bucket.openLeft.push(r.title);
+      perDay.set(k, bucket);
+      totalOpenLeft++;
+    }
+  }
+
+  if (totalWalked + totalRested + totalOpenLeft === 0) return null;
+
+  const days = Array.from(perDay.keys()).sort();
+  const lines: string[] = [];
+  for (const d of days) {
+    const b = perDay.get(d)!;
+    const parts: string[] = [];
+    if (b.walked.length) parts.push(`walked ${b.walked.length} (${b.walked.slice(0, 4).join("; ")})`);
+    if (b.openLeft.length) parts.push(`left open ${b.openLeft.length}`);
+    if (b.rested.length) parts.push(`let rest ${b.rested.length}`);
+    lines.push(`- ${d}: ${parts.join(" · ")}`);
+  }
+
+  const header =
+    `## steps signal (secondary context — not the focus)\n` +
+    `Use only if a pattern shows up that lines up with the notes, feelings, or sleep — ` +
+    `e.g. heavy/light days, bad sleep coinciding with nothing walked, sharp mood with lots left open. ` +
+    `Otherwise ignore. Never tally or grade.\n\n` +
+    `window totals: walked ${totalWalked} · let rest ${totalRested} · left open ${totalOpenLeft}\n\n`;
+
+  return header + lines.join("\n");
 }
 
 function extractDistortions(summary: string): string[] {

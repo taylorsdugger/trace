@@ -6,6 +6,7 @@ import { QUADRANT_COLORS } from "@/lib/emotions";
 import { dayKey, TZ_COOKIE } from "@/lib/dates";
 import { MemoryCard } from "@/components/MemoryCard";
 import { StreakCard } from "@/components/StreakCard";
+import { TodayTrailGlance } from "@/components/TodayTrailGlance";
 
 export const dynamic = "force-dynamic";
 
@@ -171,6 +172,9 @@ export default async function HomePage() {
           </Card>
         </div>
       </div>
+
+      {/* today's trail */}
+      <TodayTrailGlance tz={tz} />
 
       {/* memory prompt */}
       <MemoryCard theme={data?.latestTheme ?? null} />

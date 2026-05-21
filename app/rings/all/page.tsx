@@ -107,7 +107,7 @@ export default async function AllRingsPage() {
         );
       })}
 
-      <TabBar active={2} />
+      <TabBar active={3} />
     </Screen>
   );
 }

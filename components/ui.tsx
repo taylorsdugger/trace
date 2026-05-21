@@ -468,6 +468,92 @@ export function TraceLogo({
   );
 }
 
+export function SleepHorizon({
+  hours,
+  width = 28,
+  height = 5,
+  style,
+}: {
+  hours: number | null | undefined;
+  width?: number;
+  height?: number;
+  style?: CSSProperties;
+}) {
+  if (hours == null) {
+    return (
+      <div
+        style={{
+          width,
+          height,
+          borderRadius: 2,
+          border: "1px dashed var(--hairline)",
+          opacity: 0.5,
+          ...style,
+        }}
+      />
+    );
+  }
+  const f = Math.max(0, Math.min(1, (hours - 3) / 6));
+  return (
+    <div
+      style={{
+        width,
+        height,
+        borderRadius: 2,
+        background: "rgba(42,43,34,0.06)",
+        overflow: "hidden",
+        position: "relative",
+        ...style,
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: `${f * 100}%`,
+          background: "var(--ink)",
+          opacity: 0.85,
+        }}
+      />
+    </div>
+  );
+}
+
+export function CedarWhisper({
+  children,
+  style,
+}: {
+  children?: ReactNode;
+  style?: CSSProperties;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 8,
+        padding: "10px 12px",
+        background: "rgba(94,113,72,0.10)",
+        borderRadius: 12,
+        border: "1px dashed var(--moss-line, rgba(94,113,72,0.40))",
+        ...style,
+      }}
+    >
+      <CedarSprig size={14} />
+      <div
+        style={{
+          font: "italic 400 13px/1.4 var(--font-serif), Georgia, serif",
+          color: "var(--ink)",
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function CedarSprig({
   size = 18,
   style,
@@ -499,9 +585,10 @@ export function CedarSprig({
   );
 }
 
-export function TabBar({ active = 0 }: { active?: 0 | 1 | 2 | 3 }) {
+export function TabBar({ active = 0 }: { active?: 0 | 1 | 2 | 3 | 4 }) {
   const tabs: { id: string; icon: string; label: string; href: string }[] = [
     { id: "today", icon: "◐", label: "today", href: "/" },
+    { id: "trailhead", icon: "◈", label: "trailhead", href: "/trailhead" },
     { id: "write", icon: "✎", label: "a trace", href: "/trail/new" },
     { id: "rings", icon: "◇", label: "rings", href: "/rings" },
     { id: "trail", icon: "○", label: "trail", href: "/trail" },

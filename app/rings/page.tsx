@@ -164,7 +164,7 @@ export default async function RingsPage() {
         </Body>
       </Card>
 
-      <TabBar active={2} />
+      <TabBar active={3} />
     </Screen>
   );
 }

@@ -5,6 +5,7 @@ import "./globals.css";
 import { SideNav } from "@/components/SideNav";
 import { TzCookie } from "@/components/TzCookie";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SwRegister } from "@/components/SwRegister";
 import { normalizeTheme, THEME_COOKIE } from "@/lib/theme";
 
 const geistSans = Geist({
@@ -50,6 +51,7 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col md:flex-row">
         <TzCookie />
+        <SwRegister />
         <SideNav />
         <main className="flex-1 flex flex-col min-w-0">{children}</main>
         <ThemeToggle theme={theme} />
